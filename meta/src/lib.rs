@@ -43,6 +43,8 @@
 //! **Important Note:** If you’re using server-side rendering, you should enable `ssr`.
 
 use futures::{Stream, StreamExt};
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use leptos::tachys::web_sys::HtmlHeadElement;
 use leptos::{
     attr::{any_attribute::AnyAttribute, NextAttribute},
     component,
@@ -71,7 +73,9 @@ use std::{
         Arc, LazyLock,
     },
 };
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::JsCast;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use web_sys::HtmlHeadElement;
 
 mod body;
@@ -118,28 +122,37 @@ const COMMENT_NODE: u16 = 8;
 impl Default for MetaContext {
     fn default() -> Self {
         let build_cursor: fn() -> SendWrapper<Cursor> = || {
-            let head = document().head().expect("missing <head> element");
-            let mut cursor = None;
-            let mut child = head.first_child();
-            while let Some(this_child) = child {
-                if this_child.node_type() == COMMENT_NODE
-                    && this_child.text_content().as_deref()
-                        == Some(HEAD_MARKER_COMMENT)
-                {
-                    cursor = Some(this_child);
-                    break;
+            #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+            {
+                let head = document().head().expect("missing <head> element");
+                let mut cursor = None;
+                let mut child = head.first_child();
+                while let Some(this_child) = child {
+                    if this_child.node_type() == COMMENT_NODE
+                        && this_child.text_content().as_deref()
+                            == Some(HEAD_MARKER_COMMENT)
+                    {
+                        cursor = Some(this_child);
+                        break;
+                    }
+                    child = this_child.next_sibling();
                 }
-                child = this_child.next_sibling();
+                SendWrapper::new(Cursor::new(
+                    cursor
+                        .expect(
+                            "no leptos_meta HEAD marker comment found. Did \
+                             you include the <MetaTags/> component in the \
+                             <head> of your server-rendered app?",
+                        )
+                        .unchecked_into(),
+                ))
             }
-            SendWrapper::new(Cursor::new(
-                cursor
-                    .expect(
-                        "no leptos_meta HEAD marker comment found. Did you \
-                         include the <MetaTags/> component in the <head> of \
-                         your server-rendered app?",
-                    )
-                    .unchecked_into(),
-            ))
+            #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+            {
+                SendWrapper::new(Cursor::new(
+                    leptos::tachys::renderer::types::Element,
+                ))
+            }
         };
 
         let cursor = Arc::new(LazyLock::new(build_cursor));
@@ -353,6 +366,7 @@ where
     }
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 fn document_head() -> HtmlHeadElement {
     let document = document();
     document.head().unwrap_or_else(|| {
@@ -500,6 +514,7 @@ where
         // but this shouldn't warn about the parent being a regular element or being unused
         // because it will call "mount" with the parent where it is located in the component tree,
         // but actually be mounted to the <head>
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
         self.state.mount(&document_head(), None);
     }
 

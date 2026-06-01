@@ -1,5 +1,8 @@
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use crate::dom::{event_target_checked, event_target_value};
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::renderer::dom::{event_target_checked, event_target_value};
 use crate::{
-    dom::{event_target_checked, event_target_value},
     html::{
         attribute::{
             maybe_next_attr_erasure_macros::{
@@ -15,12 +18,15 @@ use crate::{
     renderer::{types::Element, RemoveEventHandler},
     view::{Position, ToTemplate},
 };
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::{wasm_bindgen::JsValue, web_sys};
 use reactive_graph::{
     signal::{ReadSignal, RwSignal, WriteSignal},
     traits::{Get, Set},
     wrappers::read::Signal,
 };
 use send_wrapper::SendWrapper;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::JsValue;
 #[cfg(feature = "reactive_stores")]
 use {
@@ -492,7 +498,7 @@ pub trait ChangeEvent {
         Self: Sized;
 }
 
-impl ChangeEvent for web_sys::Element {
+impl ChangeEvent for Element {
     fn attach_change_event<T, W>(
         &self,
         key: &str,
@@ -502,25 +508,32 @@ impl ChangeEvent for web_sys::Element {
         T: FromEventTarget + AttributeValue + 'static,
         W: Set<Value = T> + 'static,
     {
-        if key == "group" {
-            let handler = move |evt| {
-                let checked = event_target_checked(&evt);
-                if checked {
-                    write_signal.try_set(T::from_event_target(&evt));
-                }
-            };
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+        {
+            if key == "group" {
+                let handler = move |evt| {
+                    let checked = event_target_checked(&evt);
+                    if checked {
+                        write_signal.try_set(T::from_event_target(&evt));
+                    }
+                };
 
-            on::<_, _>(change, handler).attach(self)
-        } else {
-            let handler = move |evt| {
-                write_signal.try_set(T::from_event_target(&evt));
-            };
-
-            if key == "checked" || self.tag_name() == "SELECT" {
                 on::<_, _>(change, handler).attach(self)
             } else {
-                on::<_, _>(input, handler).attach(self)
+                let handler = move |evt| {
+                    write_signal.try_set(T::from_event_target(&evt));
+                };
+
+                if key == "checked" || self.tag_name() == "SELECT" {
+                    on::<_, _>(change, handler).attach(self)
+                } else {
+                    on::<_, _>(input, handler).attach(self)
+                }
             }
+        }
+        #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+        {
+            RemoveEventHandler::new(|| {})
         }
     }
 }
@@ -532,15 +545,29 @@ pub trait GetValue<T> {
     fn get_value(&self) -> T;
 }
 
-impl GetValue<String> for web_sys::Element {
+impl GetValue<String> for Element {
     fn get_value(&self) -> String {
-        self.get_attribute("value").unwrap_or_default()
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+        {
+            self.get_attribute("value").unwrap_or_default()
+        }
+        #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+        {
+            String::new()
+        }
     }
 }
 
-impl GetValue<bool> for web_sys::Element {
+impl GetValue<bool> for Element {
     fn get_value(&self) -> bool {
-        self.get_attribute("checked").unwrap_or_default() == "true"
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+        {
+            self.get_attribute("checked").unwrap_or_default() == "true"
+        }
+        #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+        {
+            false
+        }
     }
 }
 

@@ -54,12 +54,27 @@ struct ExecutorFns {
 static EXECUTOR_FNS: OnceLock<ExecutorFns> = OnceLock::new();
 
 // No-op functions to use when an executor doesn't support a specific operation.
-#[cfg(any(feature = "tokio", feature = "wasm-bindgen", feature = "glib"))]
+#[cfg(any(
+    feature = "tokio",
+    all(
+        feature = "wasm-bindgen",
+        target_arch = "wasm32",
+        target_os = "unknown"
+    ),
+    feature = "glib"
+))]
 #[cold]
 #[inline(never)]
 fn no_op_poll() {}
 
-#[cfg(all(not(feature = "wasm-bindgen"), not(debug_assertions)))]
+#[cfg(all(
+    not(all(
+        feature = "wasm-bindgen",
+        target_arch = "wasm32",
+        target_os = "unknown"
+    )),
+    not(debug_assertions)
+))]
 #[cold]
 #[inline(never)]
 fn no_op_spawn(_: PinnedFuture<()>) {
@@ -72,7 +87,11 @@ fn no_op_spawn(_: PinnedFuture<()>) {
 }
 
 // Wasm panics if you spawn without an executor
-#[cfg(feature = "wasm-bindgen")]
+#[cfg(all(
+    feature = "wasm-bindgen",
+    target_arch = "wasm32",
+    target_os = "unknown"
+))]
 #[cold]
 #[inline(never)]
 fn no_op_spawn(_: PinnedFuture<()>) {
@@ -142,11 +161,19 @@ impl Executor {
     #[inline(always)]
     pub async fn tick() {
         let (tx, rx) = futures::channel::oneshot::channel();
-        #[cfg(not(all(feature = "wasm-bindgen", target_family = "wasm")))]
+        #[cfg(not(all(
+            feature = "wasm-bindgen",
+            target_arch = "wasm32",
+            target_os = "unknown"
+        )))]
         Executor::spawn(async move {
             _ = tx.send(());
         });
-        #[cfg(all(feature = "wasm-bindgen", target_family = "wasm"))]
+        #[cfg(all(
+            feature = "wasm-bindgen",
+            target_arch = "wasm32",
+            target_os = "unknown"
+        ))]
         Executor::spawn_local(async move {
             _ = tx.send(());
         });
@@ -196,8 +223,19 @@ impl Executor {
     /// Returns `Err(_)` if a global executor has already been set.
     ///
     /// Requires the `wasm-bindgen` feature to be activated on this crate.
-    #[cfg(feature = "wasm-bindgen")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "wasm-bindgen")))]
+    #[cfg(all(
+        feature = "wasm-bindgen",
+        target_arch = "wasm32",
+        target_os = "unknown"
+    ))]
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(all(
+            feature = "wasm-bindgen",
+            target_arch = "wasm32",
+            target_os = "unknown"
+        )))
+    )]
     pub fn init_wasm_bindgen() -> Result<(), ExecutorError> {
         let executor_impl = ExecutorFns {
             // wasm-bindgen-futures only supports spawn_local
@@ -210,6 +248,16 @@ impl Executor {
         EXECUTOR_FNS
             .set(executor_impl)
             .map_err(|_| ExecutorError::AlreadySet)
+    }
+
+    /// Stub for non-browser targets to prevent compilation errors in Leptos mount/hydration code.
+    #[cfg(not(all(
+        feature = "wasm-bindgen",
+        target_arch = "wasm32",
+        target_os = "unknown"
+    )))]
+    pub fn init_wasm_bindgen() -> Result<(), ExecutorError> {
+        Ok(())
     }
 
     /// Globally sets the [`glib`] runtime as the executor used to spawn tasks.

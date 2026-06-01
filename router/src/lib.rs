@@ -154,6 +154,7 @@ pub use method::*;
 pub use navigate::*;
 pub use ssr_mode::*;
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub(crate) mod view_transition {
     use js_sys::{Function, Promise, Reflect};
     use leptos::leptos_dom::helpers::document;
@@ -219,5 +220,16 @@ pub(crate) mod view_transition {
                 fun();
             }
         }
+    }
+}
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+pub(crate) mod view_transition {
+    pub fn start_view_transition(
+        _level: u8,
+        _is_back_navigation: bool,
+        fun: impl FnOnce() + 'static,
+    ) {
+        fun();
     }
 }

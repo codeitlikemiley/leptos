@@ -23,8 +23,71 @@ oco_ref = { workspace = true, optional = true }
 async-trait = { workspace = true, default-features = true }
 paste = { workspace = true, default-features = true }
 erased = { workspace = true, default-features = true }
-wasm-bindgen = { workspace = true, default-features = true }
 html-escape = { workspace = true, default-features = true }
+
+drain_filter_polyfill = { workspace = true, default-features = true }
+indexmap = { workspace = true, default-features = true }
+rustc-hash = { workspace = true, default-features = true }
+futures = { workspace = true, default-features = true }
+itertools = { workspace = true, default-features = true }
+send_wrapper = { workspace = true, default-features = true }
+sledgehammer_bindgen = { features = [
+  "web",
+], optional = true, workspace = true, default-features = true }
+sledgehammer_utils = { optional = true, workspace = true, default-features = true }
+tracing = { optional = true, workspace = true, default-features = true }
+serde = { optional = true, workspace = true, default-features = true }
+serde_json = { optional = true, workspace = true, default-features = true }
+
+[dev-dependencies]
+tokio-test = { workspace = true, default-features = true }
+tokio = { features = [
+  "rt",
+  "macros",
+], workspace = true, default-features = true }
+
+[build-dependencies]
+rustc_version = { workspace = true, default-features = true }
+
+[features]
+default = ["testing"]
+delegation = []                                                       # enables event delegation
+error-hook = []
+hydrate = []
+islands = ["dep:serde", "dep:serde_json"]
+ssr = []
+oco = ["dep:oco_ref"]
+nightly = ["reactive_graph/nightly"]
+testing = ["dep:slotmap"]
+reactive_graph = ["dep:reactive_graph", "dep:any_spawner"]
+reactive_stores = ["reactive_graph", "dep:reactive_stores"]
+sledgehammer = ["dep:sledgehammer_bindgen", "dep:sledgehammer_utils"]
+tracing = ["dep:tracing"]
+mark_branches = []
+
+[package.metadata.cargo-all-features]
+denylist = ["tracing", "sledgehammer"]
+skip_feature_sets = [
+  [
+    "ssr",
+    "hydrate",
+  ],
+  [
+    "hydrate",
+    "islands",
+  ],
+  [
+    "ssr",
+    "delegation",
+  ],
+  [
+    "nightly",
+  ],
+]
+max_combination_size = 2
+
+[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
+wasm-bindgen = { workspace = true, default-features = true }
 js-sys = { workspace = true, default-features = true }
 web-sys = { features = [
   "Window",
@@ -44,8 +107,6 @@ web-sys = { features = [
   "ShadowRoot",
   "HtmlCollection",
   "DomStringMap",
-
-  # Events we cast to in leptos_macro -- added here so we don't force users to import them
   "AddEventListenerOptions",
   "AnimationEvent",
   "BeforeUnloadEvent",
@@ -76,8 +137,6 @@ web-sys = { features = [
   "TransitionEvent",
   "UiEvent",
   "WheelEvent",
-
-  # HTML Element Types
   "HtmlHtmlElement",
   "HtmlBaseElement",
   "HtmlHeadElement",
@@ -146,68 +205,8 @@ web-sys = { features = [
   "HtmlMenuElement",
   "HtmlSlotElement",
   "HtmlTemplateElement",
-  "HtmlOptionElement",
+  "HtmlOptionElement"
 ], workspace = true, default-features = true }
-drain_filter_polyfill = { workspace = true, default-features = true }
-indexmap = { workspace = true, default-features = true }
-rustc-hash = { workspace = true, default-features = true }
-futures = { workspace = true, default-features = true }
-itertools = { workspace = true, default-features = true }
-send_wrapper = { workspace = true, default-features = true }
-sledgehammer_bindgen = { features = [
-  "web",
-], optional = true, workspace = true, default-features = true }
-sledgehammer_utils = { optional = true, workspace = true, default-features = true }
-tracing = { optional = true, workspace = true, default-features = true }
-serde = { optional = true, workspace = true, default-features = true }
-serde_json = { optional = true, workspace = true, default-features = true }
-
-[dev-dependencies]
-tokio-test = { workspace = true, default-features = true }
-tokio = { features = [
-  "rt",
-  "macros",
-], workspace = true, default-features = true }
-
-[build-dependencies]
-rustc_version = { workspace = true, default-features = true }
-
-[features]
-default = ["testing"]
-delegation = []                                                       # enables event delegation
-error-hook = []
-hydrate = []
-islands = ["dep:serde", "dep:serde_json"]
-ssr = []
-oco = ["dep:oco_ref"]
-nightly = ["reactive_graph/nightly"]
-testing = ["dep:slotmap"]
-reactive_graph = ["dep:reactive_graph", "dep:any_spawner"]
-reactive_stores = ["reactive_graph", "dep:reactive_stores"]
-sledgehammer = ["dep:sledgehammer_bindgen", "dep:sledgehammer_utils"]
-tracing = ["dep:tracing"]
-mark_branches = []
-
-[package.metadata.cargo-all-features]
-denylist = ["tracing", "sledgehammer"]
-skip_feature_sets = [
-  [
-    "ssr",
-    "hydrate",
-  ],
-  [
-    "hydrate",
-    "islands",
-  ],
-  [
-    "ssr",
-    "delegation",
-  ],
-  [
-    "nightly",
-  ],
-]
-max_combination_size = 2
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [

@@ -1,3 +1,5 @@
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::web_sys;
 use crate::{
     html::{
         attribute::{Attr, Attribute, AttributeValue, NextAttribute},

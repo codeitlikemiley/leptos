@@ -67,7 +67,10 @@ where
     type State = BodyViewState<At>;
 
     fn build(self) -> Self::State {
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
         let el = document().body().expect("there to be a <body> element");
+        #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+        let el = leptos::tachys::renderer::types::Element;
         let attributes = self.attributes.build(&el);
 
         BodyViewState { attributes }
@@ -142,7 +145,10 @@ where
         _cursor: &Cursor,
         _position: &PositionState,
     ) -> Self::State {
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
         let el = document().body().expect("there to be a <body> element");
+        #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+        let el = leptos::tachys::renderer::types::Element;
         let attributes = self.attributes.hydrate::<FROM_SERVER>(&el);
 
         BodyViewState { attributes }
@@ -173,9 +179,16 @@ where
     }
 
     fn elements(&self) -> Vec<leptos::tachys::renderer::types::Element> {
-        vec![document()
-            .body()
-            .expect("there to be a <body> element")
-            .into()]
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+        {
+            vec![document()
+                .body()
+                .expect("there to be a <body> element")
+                .into()]
+        }
+        #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+        {
+            vec![leptos::tachys::renderer::types::Element]
+        }
     }
 }

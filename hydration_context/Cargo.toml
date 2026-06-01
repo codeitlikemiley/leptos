@@ -14,12 +14,14 @@ throw_error = { workspace = true }
 or_poisoned = { workspace = true }
 futures = { workspace = true, default-features = true }
 serde = { features = ["derive"] , workspace = true, default-features = true }
-wasm-bindgen = { workspace = true, optional = true , default-features = true }
-js-sys = { optional = true , workspace = true, default-features = true }
 pin-project-lite = { workspace = true, default-features = true }
 
+[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
+wasm-bindgen = { workspace = true, optional = true , default-features = true }
+js-sys = { optional = true , workspace = true, default-features = true }
+
 [features]
-browser = ["dep:wasm-bindgen", "dep:js-sys"]
+browser = ["wasm-bindgen", "js-sys"]
 
 [package.metadata.docs.rs]
 all-features = true

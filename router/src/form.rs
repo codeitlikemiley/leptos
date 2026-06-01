@@ -1,17 +1,39 @@
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use crate::location::BrowserUrl;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use crate::NavigateOptions;
 use crate::{
     components::ToHref,
     hooks::{has_router, use_navigate, use_resolved_path},
-    location::{BrowserUrl, LocationProvider},
-    NavigateOptions,
+    location::LocationProvider,
 };
-use leptos::{ev, html::form, logging::*, prelude::*, task::spawn_local};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use leptos::ev;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use leptos::logging::{error, warn};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use leptos::task::spawn_local;
+use leptos::{html::form, prelude::*};
 use std::{error::Error, sync::Arc};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::{JsCast, UnwrapThrowExt};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use web_sys::{FormData, RequestRedirect, Response};
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 type OnFormData = Arc<dyn Fn(&FormData)>;
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+type OnFormData = Arc<dyn Fn(&String)>;
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 type OnResponse = Arc<dyn Fn(&Response)>;
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+type OnResponse = Arc<dyn Fn(&String)>;
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 type OnError = Arc<dyn Fn(&gloo_net::Error)>;
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+type OnError = Arc<dyn Fn(&String)>;
 
 /// An HTML [`form`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form) progressively
 /// enhanced to use client-side routing.
@@ -58,6 +80,7 @@ pub fn Form<A>(
 where
     A: ToHref + Send + Sync + 'static,
 {
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
     async fn post_form_data(
         action: &str,
         form_data: FormData,
@@ -70,6 +93,7 @@ where
             .await
     }
 
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
     async fn post_params(
         action: &str,
         enctype: &str,
@@ -84,6 +108,7 @@ where
             .await
     }
 
+    #[allow(unused_variables)]
     fn inner(
         has_router: bool,
         method: Option<&'static str>,
@@ -100,6 +125,7 @@ where
     ) -> impl IntoView {
         let action_version = version;
         let navigate = has_router.then(use_navigate);
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
         let on_submit = {
             move |ev: web_sys::SubmitEvent| {
                 let navigate = navigate.clone();
@@ -299,12 +325,15 @@ where
 
         let method = method.unwrap_or("get");
 
-        form()
+        let form_el = form()
             .attr("method", method)
             .attr("action", move || action.get())
-            .attr("enctype", enctype)
-            .on(ev::submit, on_submit)
-            .child(children())
+            .attr("enctype", enctype);
+
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+        let form_el = form_el.on(ev::submit, on_submit);
+
+        form_el.child(children())
     }
 
     let has_router = has_router();
@@ -329,6 +358,7 @@ where
     )
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 fn current_window_origin() -> String {
     let location = window().location();
     let protocol = location.protocol().unwrap_or_default();
@@ -343,6 +373,7 @@ fn current_window_origin() -> String {
     )
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 fn extract_form_attributes(
     ev: &web_sys::Event,
 ) -> (web_sys::HtmlFormElement, String, String, String) {

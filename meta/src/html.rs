@@ -64,9 +64,12 @@ where
     type State = HtmlViewState<At>;
 
     fn build(self) -> Self::State {
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
         let el = document()
             .document_element()
             .expect("there to be a <html> element");
+        #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+        let el = leptos::tachys::renderer::types::Element;
 
         let attributes = self.attributes.build(&el);
 
@@ -142,9 +145,12 @@ where
         _cursor: &Cursor,
         _position: &PositionState,
     ) -> Self::State {
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
         let el = document()
             .document_element()
             .expect("there to be a <html> element");
+        #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+        let el = leptos::tachys::renderer::types::Element;
 
         let attributes = self.attributes.hydrate::<FROM_SERVER>(&el);
 
@@ -178,8 +184,15 @@ where
     }
 
     fn elements(&self) -> Vec<leptos::tachys::renderer::types::Element> {
-        vec![document()
-            .document_element()
-            .expect("there to be a <html> element")]
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+        {
+            vec![document()
+                .document_element()
+                .expect("there to be a <html> element")]
+        }
+        #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+        {
+            vec![leptos::tachys::renderer::types::Element]
+        }
     }
 }

@@ -309,3 +309,159 @@ pub mod reqwest {
         }
     }
 }
+
+#[cfg(not(feature = "browser"))]
+/// Implements [`Client`] stubs for when browser feature is disabled.
+pub mod browser {
+    use super::Client;
+    use crate::error::FromServerFnError;
+    use bytes::Bytes;
+    use std::future::Future;
+
+    /// Implements [`Client`] for a `fetch` request in the browser.
+    pub struct BrowserClient;
+
+    /// Stub request type.
+    pub struct BrowserRequest;
+    /// Stub response type.
+    pub struct BrowserResponse;
+
+    impl<
+            Error: FromServerFnError,
+            InputStreamError: FromServerFnError,
+            OutputStreamError: FromServerFnError,
+        > Client<Error, InputStreamError, OutputStreamError> for BrowserClient
+    {
+        type Request = BrowserRequest;
+        type Response = BrowserResponse;
+
+        async fn send(_req: Self::Request) -> Result<Self::Response, Error> {
+            unreachable!()
+        }
+
+        async fn open_websocket(
+            _url: &str,
+        ) -> Result<
+            (
+                impl futures::Stream<Item = Result<Bytes, Bytes>> + Send + 'static,
+                impl futures::Sink<Bytes> + Send + 'static,
+            ),
+            Error,
+        > {
+            let stream = futures::stream::empty::<Result<Bytes, Bytes>>();
+            let sink = futures::sink::drain();
+            Ok((stream, sink))
+        }
+
+        fn spawn(_future: impl Future<Output = ()> + Send + 'static) {
+            unreachable!()
+        }
+    }
+
+    impl<E> crate::request::ClientReq<E> for BrowserRequest {
+        type FormData = ();
+
+        fn try_new_req_query(
+            _path: &str,
+            _content_type: &str,
+            _accepts: &str,
+            _query: &str,
+            _method: http::Method,
+        ) -> Result<Self, E> {
+            unreachable!()
+        }
+
+        fn try_new_req_text(
+            _path: &str,
+            _content_type: &str,
+            _accepts: &str,
+            _body: String,
+            _method: http::Method,
+        ) -> Result<Self, E> {
+            unreachable!()
+        }
+
+        fn try_new_req_bytes(
+            _path: &str,
+            _content_type: &str,
+            _accepts: &str,
+            _body: bytes::Bytes,
+            _method: http::Method,
+        ) -> Result<Self, E> {
+            unreachable!()
+        }
+
+        fn try_new_req_form_data(
+            _path: &str,
+            _accepts: &str,
+            _content_type: &str,
+            _body: Self::FormData,
+            _method: http::Method,
+        ) -> Result<Self, E> {
+            unreachable!()
+        }
+
+        fn try_new_req_multipart(
+            _path: &str,
+            _accepts: &str,
+            _body: Self::FormData,
+            _method: http::Method,
+        ) -> Result<Self, E> {
+            unreachable!()
+        }
+
+        fn try_new_req_streaming(
+            _path: &str,
+            _accepts: &str,
+            _content_type: &str,
+            _body: impl futures::Stream<Item = bytes::Bytes> + Send + 'static,
+            _method: http::Method,
+        ) -> Result<Self, E> {
+            unreachable!()
+        }
+    }
+
+    impl<E> crate::response::ClientRes<E> for BrowserResponse {
+        fn try_into_string(
+            self,
+        ) -> impl std::future::Future<Output = Result<String, E>> + Send
+        {
+            async { unreachable!() }
+        }
+
+        fn try_into_bytes(
+            self,
+        ) -> impl std::future::Future<Output = Result<bytes::Bytes, E>> + Send
+        {
+            async { unreachable!() }
+        }
+
+        fn try_into_stream(
+            self,
+        ) -> Result<
+            impl futures::Stream<Item = Result<bytes::Bytes, bytes::Bytes>>
+                + Send
+                + Sync
+                + 'static,
+            E,
+        > {
+            Ok(futures::stream::empty())
+        }
+
+        fn status(&self) -> u16 {
+            unreachable!()
+        }
+
+        fn status_text(&self) -> String {
+            unreachable!()
+        }
+
+        fn location(&self) -> String {
+            unreachable!()
+        }
+
+        fn has_redirect(&self) -> bool {
+            unreachable!()
+        }
+    }
+}

@@ -2,11 +2,12 @@ use crate::{children::Children, component, prelude::*, IntoView};
 use leptos_dom::helpers::window;
 use leptos_server::{ServerAction, ServerMultiAction};
 use serde::de::DeserializeOwned;
+#[allow(unused_imports)]
+use server_fn::request::ClientReq;
 use server_fn::{
     client::Client,
     codec::PostUrl,
     error::{IntoAppError, ServerFnErrorErr},
-    request::ClientReq,
     Http, ServerFn,
 };
 use tachys::{
@@ -18,7 +19,9 @@ use tachys::{
     reactive_graph::node_ref::NodeRef,
 };
 use thiserror::Error;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::{JsCast, JsValue, UnwrapThrowExt};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use web_sys::{
     Event, FormData, HtmlButtonElement, HtmlFormElement, HtmlInputElement,
     SubmitEvent,
@@ -73,6 +76,38 @@ use web_sys::{
 ///     Ok(())
 /// }
 /// ```
+#[doc(hidden)]
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+pub trait ActionFormBound<ServFn, Error>
+where
+    ServFn: ServerFn<Error = Error>,
+{
+}
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+impl<ServFn, Error> ActionFormBound<ServFn, Error> for ServFn
+where
+    ServFn: ServerFn<Error = Error>,
+    <ServFn as ServerFn>::Client: Client<Error>,
+    <<ServFn::Client as Client<Error>>::Request as ClientReq<Error>>::FormData:
+        From<FormData>,
+{
+}
+
+#[doc(hidden)]
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+pub trait ActionFormBound<ServFn, Error>
+where
+    ServFn: ServerFn<Error = Error>,
+{
+}
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+impl<ServFn, Error> ActionFormBound<ServFn, Error> for ServFn where
+    ServFn: ServerFn<Error = Error>
+{
+}
+
 #[cfg_attr(feature = "tracing", tracing::instrument(level = "trace", skip_all))]
 #[component]
 pub fn ActionForm<ServFn, OutputProtocol>(
@@ -87,64 +122,77 @@ pub fn ActionForm<ServFn, OutputProtocol>(
 where
     ServFn: DeserializeOwned
         + ServerFn<Protocol = Http<PostUrl, OutputProtocol>>
+        + ActionFormBound<ServFn, ServFn::Error>
         + Clone
         + Send
         + Sync
         + 'static,
-    <<ServFn::Client as Client<ServFn::Error>>::Request as ClientReq<
-        ServFn::Error,
-    >>::FormData: From<FormData>,
-    ServFn: Send + Sync + 'static,
     ServFn::Output: Send + Sync + 'static,
     ServFn::Error: Send + Sync + 'static,
     <ServFn as ServerFn>::Client: Client<<ServFn as ServerFn>::Error>,
 {
-    // if redirect hook has not yet been set (by a router), defaults to a browser redirect
-    _ = server_fn::redirect::set_redirect_hook(|loc: &str| {
-        if let Some(url) = resolve_redirect_url(loc) {
-            _ = window().location().set_href(&url.href());
-        }
-    });
-
-    let version = action.version();
-    let value = action.value();
-
-    let on_submit = {
-        move |ev: SubmitEvent| {
-            if ev.default_prevented() {
-                return;
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    {
+        // if redirect hook has not yet been set (by a router), defaults to a browser redirect
+        _ = server_fn::redirect::set_redirect_hook(|loc: &str| {
+            if let Some(url) = resolve_redirect_url(loc) {
+                _ = window().location().set_href(&url.href());
             }
+        });
 
-            ev.prevent_default();
+        let version = action.version();
+        let value = action.value();
 
-            match ServFn::from_event(&ev) {
-                Ok(new_input) => {
-                    action.dispatch(new_input);
+        let on_submit = {
+            move |ev: SubmitEvent| {
+                if ev.default_prevented() {
+                    return;
                 }
-                Err(err) => {
-                    crate::logging::error!(
-                        "Error converting form field into server function \
-                         arguments: {err:?}"
-                    );
-                    value.set(Some(Err(ServerFnErrorErr::Serialization(
-                        err.to_string(),
-                    )
-                    .into_app_error())));
-                    version.update(|n| *n += 1);
+
+                ev.prevent_default();
+
+                match ServFn::from_event(&ev) {
+                    Ok(new_input) => {
+                        action.dispatch(new_input);
+                    }
+                    Err(err) => {
+                        crate::logging::error!(
+                            "Error converting form field into server function \
+                             arguments: {err:?}"
+                        );
+                        value.set(Some(Err(ServerFnErrorErr::Serialization(
+                            err.to_string(),
+                        )
+                        .into_app_error())));
+                        version.update(|n| *n += 1);
+                    }
                 }
             }
-        }
-    };
+        };
 
-    let action_form = form()
-        .action(ServFn::url())
-        .method("post")
-        .on(submit, on_submit)
-        .child(children());
-    if let Some(node_ref) = node_ref {
-        Either::Left(action_form.node_ref(node_ref))
-    } else {
-        Either::Right(action_form)
+        let action_form = form()
+            .action(ServFn::url())
+            .method("post")
+            .on(submit, on_submit)
+            .child(children());
+        if let Some(node_ref) = node_ref {
+            Either::Left(action_form.node_ref(node_ref))
+        } else {
+            Either::Right(action_form)
+        }
+    }
+
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    {
+        let action_form = form()
+            .action(ServFn::url())
+            .method("post")
+            .child(children());
+        if let Some(node_ref) = node_ref {
+            Either::Left(action_form.node_ref(node_ref))
+        } else {
+            Either::Right(action_form)
+        }
     }
 }
 
@@ -167,55 +215,71 @@ where
         + Clone
         + DeserializeOwned
         + ServerFn<Protocol = Http<PostUrl, OutputProtocol>>
+        + ActionFormBound<ServFn, ServFn::Error>
         + 'static,
     ServFn::Output: Send + Sync + 'static,
-    <<ServFn::Client as Client<ServFn::Error>>::Request as ClientReq<
-        ServFn::Error,
-    >>::FormData: From<FormData>,
     ServFn::Error: Send + Sync + 'static,
     <ServFn as ServerFn>::Client: Client<<ServFn as ServerFn>::Error>,
 {
-    // if redirect hook has not yet been set (by a router), defaults to a browser redirect
-    _ = server_fn::redirect::set_redirect_hook(|loc: &str| {
-        if let Some(url) = resolve_redirect_url(loc) {
-            _ = window().location().set_href(&url.href());
-        }
-    });
-
-    let on_submit = move |ev: SubmitEvent| {
-        if ev.default_prevented() {
-            return;
-        }
-
-        ev.prevent_default();
-
-        match ServFn::from_event(&ev) {
-            Ok(new_input) => {
-                action.dispatch(new_input);
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    {
+        // if redirect hook has not yet been set (by a router), defaults to a browser redirect
+        _ = server_fn::redirect::set_redirect_hook(|loc: &str| {
+            if let Some(url) = resolve_redirect_url(loc) {
+                _ = window().location().set_href(&url.href());
             }
-            Err(err) => {
-                action.dispatch_sync(Err(ServerFnErrorErr::Serialization(
-                    err.to_string(),
-                )
-                .into_app_error()));
-            }
-        }
-    };
+        });
 
-    let action_form = form()
-        .action(ServFn::url())
-        .method("post")
-        .attr("method", "post")
-        .on(submit, on_submit)
-        .child(children());
-    if let Some(node_ref) = node_ref {
-        Either::Left(action_form.node_ref(node_ref))
-    } else {
-        Either::Right(action_form)
+        let on_submit = move |ev: SubmitEvent| {
+            if ev.default_prevented() {
+                return;
+            }
+
+            ev.prevent_default();
+
+            match ServFn::from_event(&ev) {
+                Ok(new_input) => {
+                    action.dispatch(new_input);
+                }
+                Err(err) => {
+                    action.dispatch_sync(Err(ServerFnErrorErr::Serialization(
+                        err.to_string(),
+                    )
+                    .into_app_error()));
+                }
+            }
+        };
+
+        let action_form = form()
+            .action(ServFn::url())
+            .method("post")
+            .attr("method", "post")
+            .on(submit, on_submit)
+            .child(children());
+        if let Some(node_ref) = node_ref {
+            Either::Left(action_form.node_ref(node_ref))
+        } else {
+            Either::Right(action_form)
+        }
+    }
+
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    {
+        let action_form = form()
+            .action(ServFn::url())
+            .method("post")
+            .attr("method", "post")
+            .child(children());
+        if let Some(node_ref) = node_ref {
+            Either::Left(action_form.node_ref(node_ref))
+        } else {
+            Either::Right(action_form)
+        }
     }
 }
 
 /// Resolves a redirect location to an (absolute) URL.
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub(crate) fn resolve_redirect_url(loc: &str) -> Option<web_sys::Url> {
     let origin = match window().location().origin() {
         Ok(origin) => origin,
@@ -242,6 +306,7 @@ pub(crate) fn resolve_redirect_url(loc: &str) -> Option<web_sys::Url> {
 
 /// Tries to deserialize a type from form data. This can be used for client-side
 /// validation during form submission.
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub trait FromFormData
 where
     Self: Sized + serde::de::DeserializeOwned,
@@ -257,6 +322,7 @@ where
 
 /// Errors that can arise when converting from an HTML event or form into a Rust data type.
 #[derive(Error, Debug)]
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub enum FromFormDataError {
     /// Could not find a `<form>` connected to the event.
     #[error("Could not find <form> connected to event.")]
@@ -269,6 +335,7 @@ pub enum FromFormDataError {
     Deserialization(serde_qs::Error),
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 impl<T> FromFormData for T
 where
     T: serde::de::DeserializeOwned,
@@ -291,6 +358,7 @@ where
     }
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 fn form_data_from_event(
     ev: &SubmitEvent,
 ) -> Result<FormData, FromFormDataError> {

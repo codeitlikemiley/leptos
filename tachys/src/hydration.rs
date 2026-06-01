@@ -1,3 +1,5 @@
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::web_sys::{Comment, Element, Node, Text};
 use crate::{
     renderer::{CastFrom, Rndr},
     view::{Position, PositionState},
@@ -5,6 +7,7 @@ use crate::{
 #[cfg(any(debug_assertions, leptos_debuginfo))]
 use std::cell::Cell;
 use std::{cell::RefCell, panic::Location, rc::Rc};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use web_sys::{Comment, Element, Node, Text};
 
 #[cfg(feature = "mark_branches")]
@@ -156,6 +159,7 @@ pub(crate) fn set_currently_hydrating(
     }
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub(crate) fn failed_to_cast_element(tag_name: &str, node: Node) -> Element {
     #[cfg(not(any(debug_assertions, leptos_debuginfo)))]
     {
@@ -188,6 +192,15 @@ pub(crate) fn failed_to_cast_element(tag_name: &str, node: Node) -> Element {
     }
 }
 
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+pub(crate) fn failed_to_cast_element(
+    _tag_name: &str,
+    node: crate::renderer::types::Node,
+) -> crate::renderer::types::Element {
+    unreachable!()
+}
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub(crate) fn failed_to_cast_marker_node(node: Node) -> Comment {
     #[cfg(not(any(debug_assertions, leptos_debuginfo)))]
     {
@@ -220,6 +233,14 @@ pub(crate) fn failed_to_cast_marker_node(node: Node) -> Comment {
     }
 }
 
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+pub(crate) fn failed_to_cast_marker_node(
+    node: crate::renderer::types::Node,
+) -> crate::renderer::types::Placeholder {
+    unreachable!()
+}
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub(crate) fn failed_to_cast_text_node(node: Node) -> Text {
     #[cfg(not(any(debug_assertions, leptos_debuginfo)))]
     {
@@ -250,4 +271,11 @@ pub(crate) fn failed_to_cast_text_node(node: Node) -> Text {
              directly above this for more details."
         );
     }
+}
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+pub(crate) fn failed_to_cast_text_node(
+    node: crate::renderer::types::Node,
+) -> crate::renderer::types::Text {
+    unreachable!()
 }

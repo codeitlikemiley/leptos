@@ -1,5 +1,7 @@
 use super::ElementWithChildren;
 use crate::html::element::{ElementType, HtmlElement};
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::web_sys;
 use std::fmt::Debug;
 
 /// Creates a custom element.

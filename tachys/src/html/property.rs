@@ -2,6 +2,8 @@ use super::attribute::{
     maybe_next_attr_erasure_macros::next_attr_output_type, Attribute,
     NextAttribute,
 };
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::wasm_bindgen::JsValue;
 use crate::{
     html::attribute::{
         maybe_next_attr_erasure_macros::next_attr_combine, NamedAttributeKey,
@@ -11,6 +13,7 @@ use crate::{
 };
 use send_wrapper::SendWrapper;
 use std::{borrow::Cow, sync::Arc};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::JsValue;
 
 /// Creates an [`Attribute`] that will set a DOM property on an element.

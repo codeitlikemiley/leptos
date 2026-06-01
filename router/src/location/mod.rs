@@ -2,6 +2,7 @@
 
 use any_spawner::Executor;
 use core::fmt::Debug;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use js_sys::Reflect;
 use leptos::server::ServerActionError;
 use reactive_graph::{
@@ -10,10 +11,14 @@ use reactive_graph::{
     signal::{ArcRwSignal, ReadSignal},
     traits::With,
 };
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use send_wrapper::SendWrapper;
 use std::{borrow::Cow, future::Future};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use tachys::dom::window;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::{JsCast, JsValue};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use web_sys::{HtmlAnchorElement, MouseEvent};
 
 mod history;
@@ -263,9 +268,11 @@ pub trait LocationProvider: Clone + 'static {
     fn is_back(&self) -> ReadSignal<bool>;
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 #[derive(Debug, Clone, Default)]
 pub struct State(Option<SendWrapper<JsValue>>);
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 impl State {
     pub fn new(state: Option<JsValue>) -> Self {
         Self(state.map(SendWrapper::new))
@@ -279,6 +286,7 @@ impl State {
     }
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 impl PartialEq for State {
     fn eq(&self, other: &Self) -> bool {
         self.0.as_ref().map(|n| n.as_ref())
@@ -286,6 +294,7 @@ impl PartialEq for State {
     }
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 impl<T> From<T> for State
 where
     T: Into<JsValue>,
@@ -295,6 +304,22 @@ where
     }
 }
 
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct State(Option<String>);
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+impl State {
+    pub fn new(state: Option<String>) -> Self {
+        Self(state)
+    }
+
+    pub fn to_js_value(&self) -> String {
+        self.0.clone().unwrap_or_default()
+    }
+}
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub(crate) fn handle_anchor_click<NavFn, NavFut>(
     router_base: Option<Cow<'static, str>>,
     parse_with_base: fn(&str, &str) -> Result<Url, JsValue>,
