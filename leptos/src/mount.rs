@@ -5,10 +5,9 @@ use any_spawner::Executor;
 use reactive_graph::owner::Owner;
 #[cfg(debug_assertions)]
 use std::cell::Cell;
-use tachys::view::{Mountable, Render};
-
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use tachys::dom::body;
+use tachys::view::{Mountable, Render};
 #[cfg(feature = "hydrate")]
 use tachys::{
     hydration::Cursor,
@@ -80,19 +79,21 @@ where
         {
             if !cfg!(feature = "hydrate") && FIRST_CALL.get() {
                 logging::warn!(
-                    "It seems like you're trying to use Leptos in hydration mode, \
-                     but the `hydrate` feature is not enabled on the `leptos` \
-                     crate. Add `features = [\"hydrate\"]` to your Cargo.toml for \
-                     the crate to work properly.\n\nNote that hydration and \
-                     client-side rendering now use separate functions from \
-                     leptos::mount: you are calling a hydration function."
+                    "It seems like you're trying to use Leptos in hydration \
+                     mode, but the `hydrate` feature is not enabled on the \
+                     `leptos` crate. Add `features = [\"hydrate\"]` to your \
+                     Cargo.toml for the crate to work properly.\n\nNote that \
+                     hydration and client-side rendering now use separate \
+                     functions from leptos::mount: you are calling a \
+                     hydration function."
                 );
             }
             FIRST_CALL.set(false);
         }
 
         // create a new reactive owner and use it as the root node to run the app
-        let owner = Owner::new_root(Some(Arc::new(HydrateSharedContext::new())));
+        let owner =
+            Owner::new_root(Some(Arc::new(HydrateSharedContext::new())));
         let mountable = owner.with(move || {
             let view = f().into_view();
             view.hydrate::<true>(
@@ -142,19 +143,21 @@ where
         {
             if !cfg!(feature = "hydrate") && FIRST_CALL.get() {
                 logging::warn!(
-                    "It seems like you're trying to use Leptos in hydration mode, \
-                     but the `hydrate` feature is not enabled on the `leptos` \
-                     crate. Add `features = [\"hydrate\"]` to your Cargo.toml for \
-                     the crate to work properly.\n\nNote that hydration and \
-                     client-side rendering now use separate functions from \
-                     leptos::mount: you are calling a hydration function."
+                    "It seems like you're trying to use Leptos in hydration \
+                     mode, but the `hydrate` feature is not enabled on the \
+                     `leptos` crate. Add `features = [\"hydrate\"]` to your \
+                     Cargo.toml for the crate to work properly.\n\nNote that \
+                     hydration and client-side rendering now use separate \
+                     functions from leptos::mount: you are calling a \
+                     hydration function."
                 );
             }
             FIRST_CALL.set(false);
         }
 
         // create a new reactive owner and use it as the root node to run the app
-        let owner = Owner::new_root(Some(Arc::new(HydrateSharedContext::new())));
+        let owner =
+            Owner::new_root(Some(Arc::new(HydrateSharedContext::new())));
         let mountable = owner
             .with(move || {
                 use reactive_graph::computed::ScopedFuture;
@@ -222,12 +225,12 @@ where
             if !cfg!(feature = "csr") && FIRST_CALL.get() {
                 logging::warn!(
                     "It seems like you're trying to use Leptos in client-side \
-                     rendering mode, but the `csr` feature is not enabled on the \
-                     `leptos` crate. Add `features = [\"csr\"]` to your \
+                     rendering mode, but the `csr` feature is not enabled on \
+                     the `leptos` crate. Add `features = [\"csr\"]` to your \
                      Cargo.toml for the crate to work properly.\n\nNote that \
                      hydration and client-side rendering now use different \
-                     functions from leptos::mount. You are using a client-side \
-                     rendering mount function."
+                     functions from leptos::mount. You are using a \
+                     client-side rendering mount function."
                 );
             }
             FIRST_CALL.set(false);

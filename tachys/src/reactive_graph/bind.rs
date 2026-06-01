@@ -1,3 +1,7 @@
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use crate::dom::{event_target_checked, event_target_value};
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::renderer::dom::{event_target_checked, event_target_value};
 use crate::{
     html::{
         attribute::{
@@ -14,6 +18,8 @@ use crate::{
     renderer::{types::Element, RemoveEventHandler},
     view::{Position, ToTemplate},
 };
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::{wasm_bindgen::JsValue, web_sys};
 use reactive_graph::{
     signal::{ReadSignal, RwSignal, WriteSignal},
     traits::{Get, Set},
@@ -22,15 +28,6 @@ use reactive_graph::{
 use send_wrapper::SendWrapper;
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::JsValue;
-
-#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-use crate::{web_sys, wasm_bindgen::JsValue};
-
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-use crate::dom::{event_target_checked, event_target_value};
-
-#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-use crate::renderer::dom::{event_target_checked, event_target_value};
 #[cfg(feature = "reactive_stores")]
 use {
     reactive_graph::owner::Storage,

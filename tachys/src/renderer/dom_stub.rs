@@ -10,7 +10,9 @@ pub struct JsValue;
 
 impl JsValue {
     pub const UNDEFINED: JsValue = JsValue;
-    pub fn from_str(_s: &str) -> Self { JsValue }
+    pub fn from_str(_s: &str) -> Self {
+        JsValue
+    }
 }
 
 macro_rules! impl_from_jsvalue {
@@ -35,35 +37,53 @@ impl_from_jsvalue! {
 }
 
 impl<'a> From<&'a str> for JsValue {
-    fn from(_: &'a str) -> Self { JsValue }
+    fn from(_: &'a str) -> Self {
+        JsValue
+    }
 }
 impl<'a> From<Option<&'a str>> for JsValue {
-    fn from(_: Option<&'a str>) -> Self { JsValue }
+    fn from(_: Option<&'a str>) -> Self {
+        JsValue
+    }
 }
 
 impl<'a> From<&'a String> for JsValue {
-    fn from(_: &'a String) -> Self { JsValue }
+    fn from(_: &'a String) -> Self {
+        JsValue
+    }
 }
 impl<'a> From<Option<&'a String>> for JsValue {
-    fn from(_: Option<&'a String>) -> Self { JsValue }
+    fn from(_: Option<&'a String>) -> Self {
+        JsValue
+    }
 }
 
 impl<'a> From<Cow<'a, str>> for JsValue {
-    fn from(_: Cow<'a, str>) -> Self { JsValue }
+    fn from(_: Cow<'a, str>) -> Self {
+        JsValue
+    }
 }
 impl<'a> From<Option<Cow<'a, str>>> for JsValue {
-    fn from(_: Option<Cow<'a, str>>) -> Self { JsValue }
+    fn from(_: Option<Cow<'a, str>>) -> Self {
+        JsValue
+    }
 }
 
 impl<'a> From<&'a Cow<'a, str>> for JsValue {
-    fn from(_: &'a Cow<'a, str>) -> Self { JsValue }
+    fn from(_: &'a Cow<'a, str>) -> Self {
+        JsValue
+    }
 }
 impl<'a> From<Option<&'a Cow<'a, str>>> for JsValue {
-    fn from(_: Option<&'a Cow<'a, str>>) -> Self { JsValue }
+    fn from(_: Option<&'a Cow<'a, str>>) -> Self {
+        JsValue
+    }
 }
 
 impl From<Option<JsValue>> for JsValue {
-    fn from(_: Option<JsValue>) -> Self { JsValue }
+    fn from(_: Option<JsValue>) -> Self {
+        JsValue
+    }
 }
 
 pub trait JsCast {
@@ -71,7 +91,9 @@ pub trait JsCast {
 }
 
 impl JsCast for Element {
-    fn unchecked_into<T>(self) -> T { panic!() }
+    fn unchecked_into<T>(self) -> T {
+        panic!()
+    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -282,7 +304,10 @@ impl Element {
     where
         T: JsCast,
     {
-        panic!("Element::unchecked_into is a browser-only API and cannot be called on the server.")
+        panic!(
+            "Element::unchecked_into is a browser-only API and cannot be \
+             called on the server."
+        )
     }
 
     pub fn tag_name(&self) -> String {
@@ -417,4 +442,3 @@ pub fn event_target_value<T>(event: &T) -> String {
 pub fn event_target_checked(ev: &crate::web_sys::Event) -> bool {
     false
 }
-

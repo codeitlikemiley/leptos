@@ -10,7 +10,7 @@ use tachys::html::event::EventDescriptor;
 #[cfg(feature = "tracing")]
 use tracing::instrument;
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-use wasm_bindgen::{JsCast, JsValue, UnwrapThrowExt, prelude::Closure};
+use wasm_bindgen::{prelude::Closure, JsCast, JsValue, UnwrapThrowExt};
 
 #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
 #[allow(missing_docs)]
@@ -18,19 +18,25 @@ pub mod mock {
     #[derive(Clone, Debug, PartialEq, Eq)]
     pub struct JsValue;
     impl JsValue {
-        pub fn undefined() -> Self { JsValue }
+        pub fn undefined() -> Self {
+            JsValue
+        }
     }
-    
+
     pub trait JsCast: Sized {
-        fn unchecked_into<T>(self) -> T { panic!() }
-        fn unchecked_ref(&self) -> &Self { self }
+        fn unchecked_into<T>(self) -> T {
+            panic!()
+        }
+        fn unchecked_ref(&self) -> &Self {
+            self
+        }
     }
     impl JsCast for JsValue {}
 
     pub mod web_sys {
         #[allow(unused_imports)]
         use super::JsValue;
-        
+
         #[derive(Clone, Debug)]
         pub struct Window;
         #[derive(Clone, Debug)]
@@ -43,7 +49,7 @@ pub mod mock {
         pub struct Event;
         #[derive(Clone, Debug)]
         pub struct HtmlInputElement;
-        
+
         impl super::JsCast for Window {}
         impl super::JsCast for Document {}
         impl super::JsCast for Element {}
@@ -52,16 +58,20 @@ pub mod mock {
         impl super::JsCast for HtmlInputElement {}
 
         impl Window {
-            pub fn location(&self) -> Location { Location }
+            pub fn location(&self) -> Location {
+                Location
+            }
         }
         impl Location {
-            pub fn set_href(&self, _val: &str) -> Result<(), JsValue> { Ok(()) }
+            pub fn set_href(&self, _val: &str) -> Result<(), JsValue> {
+                Ok(())
+            }
         }
     }
 }
 
 #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-use mock::{JsCast, JsValue, web_sys};
+use mock::{web_sys, JsCast, JsValue};
 
 // ==========================================
 // --- Shared Handles & Structs (Isomorphic) ---

@@ -43,13 +43,12 @@ pub mod prelude {
     };
 }
 
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use renderer::dom::{JsValue, Node};
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::JsValue;
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use web_sys::Node;
-
-#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-use renderer::dom::{Node, JsValue};
 
 /// Helpers for interacting with the DOM.
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
@@ -58,21 +57,38 @@ pub mod dom;
 #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
 #[allow(missing_docs)]
 pub mod dom {
-    use crate::web_sys::{Document, HtmlElement, Window};
-    use crate::renderer::dom::JsCast;
+    use crate::{
+        renderer::dom::JsCast,
+        web_sys::{Document, HtmlElement, Window},
+    };
 
     /// Stub document
-    pub fn document() -> Document { Document }
+    pub fn document() -> Document {
+        Document
+    }
     /// Stub body
-    pub fn body() -> HtmlElement { HtmlElement }
+    pub fn body() -> HtmlElement {
+        HtmlElement
+    }
     /// Stub window
-    pub fn window() -> Window { Window }
+    pub fn window() -> Window {
+        Window
+    }
     /// Stub event_target
-    pub fn event_target<T>(event: &crate::web_sys::Event) -> T where T: JsCast { panic!() }
+    pub fn event_target<T>(event: &crate::web_sys::Event) -> T
+    where
+        T: JsCast,
+    {
+        panic!()
+    }
     /// Stub event_target_value
-    pub fn event_target_value<T>(event: &T) -> String { String::new() }
+    pub fn event_target_value<T>(event: &T) -> String {
+        String::new()
+    }
     /// Stub event_target_checked
-    pub fn event_target_checked(ev: &crate::web_sys::Event) -> bool { false }
+    pub fn event_target_checked(ev: &crate::web_sys::Event) -> bool {
+        false
+    }
 }
 /// Types for building a statically-typed HTML view tree.
 pub mod html;
@@ -124,7 +140,11 @@ impl<T> UnwrapOrDebug for Result<T, JsValue> {
 
     #[track_caller]
     fn or_debug(self, el: &Node, name: &'static str) {
-        #[cfg(all(target_arch = "wasm32", target_os = "unknown", any(debug_assertions, leptos_debuginfo)))]
+        #[cfg(all(
+            target_arch = "wasm32",
+            target_os = "unknown",
+            any(debug_assertions, leptos_debuginfo)
+        ))]
         {
             if let Err(err) = self {
                 let location = std::panic::Location::caller();
@@ -138,7 +158,11 @@ impl<T> UnwrapOrDebug for Result<T, JsValue> {
                 );
             }
         }
-        #[cfg(not(all(target_arch = "wasm32", target_os = "unknown", any(debug_assertions, leptos_debuginfo))))]
+        #[cfg(not(all(
+            target_arch = "wasm32",
+            target_os = "unknown",
+            any(debug_assertions, leptos_debuginfo)
+        )))]
         {
             _ = el;
             _ = name;
@@ -152,7 +176,11 @@ impl<T> UnwrapOrDebug for Result<T, JsValue> {
         el: &Node,
         name: &'static str,
     ) -> Option<Self::Output> {
-        #[cfg(all(target_arch = "wasm32", target_os = "unknown", any(debug_assertions, leptos_debuginfo)))]
+        #[cfg(all(
+            target_arch = "wasm32",
+            target_os = "unknown",
+            any(debug_assertions, leptos_debuginfo)
+        ))]
         {
             if let Err(err) = &self {
                 let location = std::panic::Location::caller();
@@ -167,7 +195,11 @@ impl<T> UnwrapOrDebug for Result<T, JsValue> {
             }
             self.ok()
         }
-        #[cfg(not(all(target_arch = "wasm32", target_os = "unknown", any(debug_assertions, leptos_debuginfo))))]
+        #[cfg(not(all(
+            target_arch = "wasm32",
+            target_os = "unknown",
+            any(debug_assertions, leptos_debuginfo)
+        )))]
         {
             _ = el;
             _ = name;
@@ -215,7 +247,7 @@ pub mod web_sys {
             )*
         };
     }
-    
+
     mock_types! {
         Window,
         Document,
@@ -327,25 +359,48 @@ pub mod web_sys {
     }
 
     impl AddEventListenerOptions {
-        pub fn new() -> Self { AddEventListenerOptions }
+        pub fn new() -> Self {
+            AddEventListenerOptions
+        }
     }
 
     static DUMMY_ELEMENT: Element = Element;
 
     impl Document {
-        pub fn body(&self) -> Option<HtmlElement> { Some(HtmlElement) }
-        pub fn document_element(&self) -> Option<Element> { Some(Element) }
-        pub fn head(&self) -> Option<HtmlHeadElement> { Some(HtmlHeadElement) }
-        pub fn create_element(&self, _tag: &str) -> Result<Element, crate::renderer::dom::JsValue> { Ok(Element) }
+        pub fn body(&self) -> Option<HtmlElement> {
+            Some(HtmlElement)
+        }
+        pub fn document_element(&self) -> Option<Element> {
+            Some(Element)
+        }
+        pub fn head(&self) -> Option<HtmlHeadElement> {
+            Some(HtmlHeadElement)
+        }
+        pub fn create_element(
+            &self,
+            _tag: &str,
+        ) -> Result<Element, crate::renderer::dom::JsValue> {
+            Ok(Element)
+        }
         pub fn set_title(&self, _title: &str) {}
     }
 
     impl Element {
-        pub fn append_child(&self, _child: &Element) -> Result<Element, crate::renderer::dom::JsValue> { Ok(Element) }
+        pub fn append_child(
+            &self,
+            _child: &Element,
+        ) -> Result<Element, crate::renderer::dom::JsValue> {
+            Ok(Element)
+        }
     }
 
     impl HtmlHeadElement {
-        pub fn append_child(&self, _child: &Element) -> Result<Element, crate::renderer::dom::JsValue> { Ok(Element) }
+        pub fn append_child(
+            &self,
+            _child: &Element,
+        ) -> Result<Element, crate::renderer::dom::JsValue> {
+            Ok(Element)
+        }
     }
 
     macro_rules! impl_deref_element {
@@ -379,5 +434,5 @@ pub mod web_sys {
 #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
 #[allow(missing_docs)]
 pub mod wasm_bindgen {
-    pub use crate::renderer::dom::{JsValue, JsCast};
+    pub use crate::renderer::dom::{JsCast, JsValue};
 }

@@ -19,10 +19,18 @@ mod csr;
 #[cfg_attr(docsrs, doc(cfg(feature = "browser")))]
 mod hydrate;
 mod ssr;
-#[cfg(all(feature = "browser", target_arch = "wasm32", target_os = "unknown"))]
+#[cfg(all(
+    feature = "browser",
+    target_arch = "wasm32",
+    target_os = "unknown"
+))]
 pub use csr::*;
 use futures::Stream;
-#[cfg(all(feature = "browser", target_arch = "wasm32", target_os = "unknown"))]
+#[cfg(all(
+    feature = "browser",
+    target_arch = "wasm32",
+    target_os = "unknown"
+))]
 pub use hydrate::*;
 use serde::{Deserialize, Serialize};
 pub use ssr::*;

@@ -1,3 +1,5 @@
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::wasm_bindgen::JsValue;
 use crate::{
     html::{
         attribute::Attribute,
@@ -5,14 +7,10 @@ use crate::{
         event::{on, EventDescriptor},
         style::IntoStyle,
     },
-    renderer::RemoveEventHandler,
+    renderer::{types::Element, RemoveEventHandler},
 };
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::JsValue;
-
-#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-use crate::wasm_bindgen::JsValue;
-use crate::renderer::types::Element;
 
 /// Extends an HTML element, allowing you to add attributes and children to the
 /// element's built state at runtime, with a similar API to how they

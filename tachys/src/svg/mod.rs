@@ -1,3 +1,5 @@
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::web_sys;
 use crate::{
     html::{
         attribute::{any_attribute::AnyAttribute, Attribute},
@@ -12,9 +14,6 @@ use crate::{
     view::{Position, PositionState, Render, RenderHtml},
 };
 use std::{borrow::Cow, fmt::Debug};
-
-#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-use crate::web_sys;
 
 macro_rules! svg_elements {
 	($($tag:ident  [$($attr:ty),*]),* $(,)?) => {

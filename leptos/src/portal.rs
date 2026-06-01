@@ -53,7 +53,10 @@ where
             Effect::new(move |_| {
                 let container = if is_svg {
                     document()
-                        .create_element_ns(Some("http://www.w3.org/2000/svg"), "g")
+                        .create_element_ns(
+                            Some("http://www.w3.org/2000/svg"),
+                            "g",
+                        )
                         .expect("SVG element creation to work")
                 } else {
                     document()

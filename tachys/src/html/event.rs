@@ -1,3 +1,5 @@
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::web_sys;
 use crate::{
     html::attribute::{
         maybe_next_attr_erasure_macros::next_attr_combine, Attribute,
@@ -7,8 +9,6 @@ use crate::{
     view::{Position, ToTemplate},
 };
 use send_wrapper::SendWrapper;
-#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-use crate::web_sys;
 use std::{
     borrow::Cow,
     cell::RefCell,

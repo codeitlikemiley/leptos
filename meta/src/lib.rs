@@ -43,6 +43,8 @@
 //! **Important Note:** If you’re using server-side rendering, you should enable `ssr`.
 
 use futures::{Stream, StreamExt};
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use leptos::tachys::web_sys::HtmlHeadElement;
 use leptos::{
     attr::{any_attribute::AnyAttribute, NextAttribute},
     component,
@@ -75,9 +77,6 @@ use std::{
 use wasm_bindgen::JsCast;
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use web_sys::HtmlHeadElement;
-
-#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-use leptos::tachys::web_sys::HtmlHeadElement;
 
 mod body;
 mod html;
@@ -141,16 +140,18 @@ impl Default for MetaContext {
                 SendWrapper::new(Cursor::new(
                     cursor
                         .expect(
-                            "no leptos_meta HEAD marker comment found. Did you \
-                             include the <MetaTags/> component in the <head> of \
-                             your server-rendered app?",
+                            "no leptos_meta HEAD marker comment found. Did \
+                             you include the <MetaTags/> component in the \
+                             <head> of your server-rendered app?",
                         )
                         .unchecked_into(),
                 ))
             }
             #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
             {
-                SendWrapper::new(Cursor::new(leptos::tachys::renderer::types::Element))
+                SendWrapper::new(Cursor::new(
+                    leptos::tachys::renderer::types::Element,
+                ))
             }
         };
 

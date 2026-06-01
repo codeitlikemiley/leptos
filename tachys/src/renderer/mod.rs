@@ -1,10 +1,9 @@
 use crate::view::{Mountable, ToTemplate};
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use dom::JsValue;
 use std::{borrow::Cow, fmt::Debug, marker::PhantomData};
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::JsValue;
-
-#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-use dom::JsValue;
 
 /// A DOM renderer.
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]

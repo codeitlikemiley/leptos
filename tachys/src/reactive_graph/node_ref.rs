@@ -1,4 +1,6 @@
 use crate::html::{element::ElementType, node_ref::NodeRefContainer};
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::wasm_bindgen::JsCast;
 use reactive_graph::{
     effect::Effect,
     graph::untrack,
@@ -15,9 +17,6 @@ use send_wrapper::SendWrapper;
 use std::{cell::Cell, ops::DerefMut};
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::JsCast;
-
-#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-use crate::wasm_bindgen::JsCast;
 
 /// A reactive reference to a DOM node that can be used with the `node_ref` attribute.
 #[derive(Debug)]
