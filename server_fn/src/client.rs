@@ -337,7 +337,8 @@ pub mod browser {
 
         fn send(
             _req: Self::Request,
-        ) -> impl Future<Output = Result<Self::Response, Error>> + Send {
+        ) -> impl Future<Output = Result<Self::Response, Error>> + Send
+        {
             async { unreachable!() }
         }
 
@@ -430,18 +431,27 @@ pub mod browser {
     }
 
     impl<E> crate::response::ClientRes<E> for BrowserResponse {
-        fn try_into_string(self) -> impl std::future::Future<Output = Result<String, E>> + Send {
+        fn try_into_string(
+            self,
+        ) -> impl std::future::Future<Output = Result<String, E>> + Send
+        {
             async { unreachable!() }
         }
 
-        fn try_into_bytes(self) -> impl std::future::Future<Output = Result<bytes::Bytes, E>> + Send {
+        fn try_into_bytes(
+            self,
+        ) -> impl std::future::Future<Output = Result<bytes::Bytes, E>> + Send
+        {
             async { unreachable!() }
         }
 
         fn try_into_stream(
             self,
         ) -> Result<
-            impl futures::Stream<Item = Result<bytes::Bytes, bytes::Bytes>> + Send + Sync + 'static,
+            impl futures::Stream<Item = Result<bytes::Bytes, bytes::Bytes>>
+                + Send
+                + Sync
+                + 'static,
             E,
         > {
             Ok(futures::stream::empty())

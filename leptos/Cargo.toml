@@ -50,6 +50,14 @@ web-sys = { features = [
   "ShadowRoot",
   "ShadowRootInit",
   "ShadowRootMode",
+  "Event",
+  "FormData",
+  "HtmlButtonElement",
+  "HtmlFormElement",
+  "HtmlInputElement",
+  "SubmitEvent",
+  "Url",
+  "UrlSearchParams",
 ], workspace = true, default-features = true }
 wasm-bindgen = { workspace = true, default-features = true }
 wasm-bindgen-futures = { workspace = true, default-features = true }

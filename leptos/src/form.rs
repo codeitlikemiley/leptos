@@ -79,30 +79,32 @@ use web_sys::{
 pub trait ActionFormBound<ServFn, Error>
 where
     ServFn: ServerFn<Error = Error>,
-{}
+{
+}
 
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 impl<ServFn, Error> ActionFormBound<ServFn, Error> for ServFn
 where
     ServFn: ServerFn<Error = Error>,
     <ServFn as ServerFn>::Client: Client<Error>,
-    <<ServFn::Client as Client<Error>>::Request as ClientReq<
-        Error,
-    >>::FormData: From<FormData>,
-{}
+    <<ServFn::Client as Client<Error>>::Request as ClientReq<Error>>::FormData:
+        From<FormData>,
+{
+}
 
 #[doc(hidden)]
 #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
 pub trait ActionFormBound<ServFn, Error>
 where
     ServFn: ServerFn<Error = Error>,
-{}
+{
+}
 
 #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-impl<ServFn, Error> ActionFormBound<ServFn, Error> for ServFn
-where
-    ServFn: ServerFn<Error = Error>,
-{}
+impl<ServFn, Error> ActionFormBound<ServFn, Error> for ServFn where
+    ServFn: ServerFn<Error = Error>
+{
+}
 
 #[cfg_attr(feature = "tracing", tracing::instrument(level = "trace", skip_all))]
 #[component]
