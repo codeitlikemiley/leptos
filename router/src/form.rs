@@ -1,10 +1,9 @@
 use crate::{
     components::ToHref,
     hooks::{has_router, use_navigate, use_resolved_path},
-    location::{BrowserUrl, LocationProvider},
-    NavigateOptions,
+    location::LocationProvider,
 };
-use leptos::{ev, html::form, logging::*, prelude::*, task::spawn_local};
+use leptos::{html::form, prelude::*};
 use std::{error::Error, sync::Arc};
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::{JsCast, UnwrapThrowExt};
@@ -105,16 +104,16 @@ where
         action: ArcMemo<String>,
         enctype: Option<String>,
         version: Option<RwSignal<usize>>,
-        error: Option<RwSignal<Option<Box<dyn Error + Send + Sync>>>>,
-        on_form_data: Option<OnFormData>,
-        on_response: Option<OnResponse>,
-        on_error: Option<OnError>,
+        _error: Option<RwSignal<Option<Box<dyn Error + Send + Sync>>>>,
+        _on_form_data: Option<OnFormData>,
+        _on_response: Option<OnResponse>,
+        _on_error: Option<OnError>,
         children: Children,
-        noscroll: bool,
-        replace: bool,
+        _noscroll: bool,
+        _replace: bool,
     ) -> impl IntoView {
-        let action_version = version;
-        let navigate = has_router.then(use_navigate);
+        let _action_version = version;
+        let _navigate = has_router.then(use_navigate);
         #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
         let on_submit = {
             move |ev: web_sys::SubmitEvent| {

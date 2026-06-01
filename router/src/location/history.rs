@@ -1,17 +1,13 @@
-use super::{LocationChange, LocationProvider, Url};
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use super::handle_anchor_click;
-use crate::{hooks::use_navigate, params::ParamsMap};
+use super::{LocationChange, LocationProvider, Url};
+use crate::params::ParamsMap;
 use core::fmt;
 use futures::channel::oneshot;
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use js_sys::{try_iter, Array, JsString};
-use leptos::{ev, prelude::*};
-use or_poisoned::OrPoisoned;
-use reactive_graph::{
-    signal::ArcRwSignal,
-    traits::{ReadUntracked, Set},
-};
+use leptos::prelude::*;
+use reactive_graph::signal::ArcRwSignal;
 use std::{
     borrow::Cow,
     string::String,
@@ -300,9 +296,16 @@ impl BrowserUrl {
             path = path[..q_idx].to_string();
         }
         if path.starts_with("http://") || path.starts_with("https://") {
-            let rest = if path.starts_with("http://") { &path[7..] } else { &path[8..] };
+            let rest = if path.starts_with("http://") {
+                &path[7..]
+            } else {
+                &path[8..]
+            };
             if let Some(slash_idx) = rest.find('/') {
-                origin = path[..if path.starts_with("http://") { 7 } else { 8 } + slash_idx].to_string();
+                origin =
+                    path[..if path.starts_with("http://") { 7 } else { 8 }
+                        + slash_idx]
+                        .to_string();
                 path = rest[slash_idx..].to_string();
             } else {
                 origin = path.clone();
