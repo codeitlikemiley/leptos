@@ -335,31 +335,22 @@ pub mod browser {
         type Request = BrowserRequest;
         type Response = BrowserResponse;
 
-        fn send(
-            _req: Self::Request,
-        ) -> impl Future<Output = Result<Self::Response, Error>> + Send
-        {
-            async { unreachable!() }
+        async fn send(_req: Self::Request) -> Result<Self::Response, Error> {
+            unreachable!()
         }
 
-        fn open_websocket(
+        async fn open_websocket(
             _url: &str,
-        ) -> impl Future<
-            Output = Result<
-                (
-                    impl futures::Stream<Item = Result<Bytes, Bytes>>
-                        + Send
-                        + 'static,
-                    impl futures::Sink<Bytes> + Send + 'static,
-                ),
-                Error,
-            >,
-        > + Send {
-            async {
-                let stream = futures::stream::empty::<Result<Bytes, Bytes>>();
-                let sink = futures::sink::drain();
-                Ok((stream, sink))
-            }
+        ) -> Result<
+            (
+                impl futures::Stream<Item = Result<Bytes, Bytes>> + Send + 'static,
+                impl futures::Sink<Bytes> + Send + 'static,
+            ),
+            Error,
+        > {
+            let stream = futures::stream::empty::<Result<Bytes, Bytes>>();
+            let sink = futures::sink::drain();
+            Ok((stream, sink))
         }
 
         fn spawn(_future: impl Future<Output = ()> + Send + 'static) {
