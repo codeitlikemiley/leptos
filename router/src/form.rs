@@ -9,6 +9,16 @@ use std::{error::Error, sync::Arc};
 use wasm_bindgen::{JsCast, UnwrapThrowExt};
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use web_sys::{FormData, RequestRedirect, Response};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use crate::NavigateOptions;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use crate::location::BrowserUrl;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use leptos::task::spawn_local;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use leptos::logging::{error, warn};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use leptos::ev;
 
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 type OnFormData = Arc<dyn Fn(&FormData)>;
@@ -98,22 +108,23 @@ where
             .await
     }
 
+    #[allow(unused_variables)]
     fn inner(
         has_router: bool,
         method: Option<&'static str>,
         action: ArcMemo<String>,
         enctype: Option<String>,
         version: Option<RwSignal<usize>>,
-        _error: Option<RwSignal<Option<Box<dyn Error + Send + Sync>>>>,
-        _on_form_data: Option<OnFormData>,
-        _on_response: Option<OnResponse>,
-        _on_error: Option<OnError>,
+        error: Option<RwSignal<Option<Box<dyn Error + Send + Sync>>>>,
+        on_form_data: Option<OnFormData>,
+        on_response: Option<OnResponse>,
+        on_error: Option<OnError>,
         children: Children,
-        _noscroll: bool,
-        _replace: bool,
+        noscroll: bool,
+        replace: bool,
     ) -> impl IntoView {
-        let _action_version = version;
-        let _navigate = has_router.then(use_navigate);
+        let action_version = version;
+        let navigate = has_router.then(use_navigate);
         #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
         let on_submit = {
             move |ev: web_sys::SubmitEvent| {

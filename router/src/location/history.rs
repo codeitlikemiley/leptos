@@ -1,5 +1,11 @@
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use super::handle_anchor_click;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use or_poisoned::OrPoisoned;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use crate::hooks::use_navigate;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use leptos::ev;
 use super::{LocationChange, LocationProvider, Url};
 use crate::params::ParamsMap;
 use core::fmt;
