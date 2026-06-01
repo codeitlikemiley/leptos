@@ -4,50 +4,20 @@
 use super::{CastFrom, RemoveEventHandler};
 use crate::view::{Mountable, ToTemplate};
 use std::borrow::Cow;
+use wasm_bindgen::JsValue;
+use web_sys::{Comment, DomTokenList, CssStyleDeclaration, HtmlTemplateElement};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Dom;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Node;
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Text;
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Element;
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Placeholder;
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Event;
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct ClassList;
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct CssStyleDeclaration;
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct TemplateElement;
-
-impl AsRef<Node> for Element {
-    fn as_ref(&self) -> &Node {
-        static NODE: Node = Node;
-        &NODE
-    }
-}
-impl AsRef<Node> for Text {
-    fn as_ref(&self) -> &Node {
-        static NODE: Node = Node;
-        &NODE
-    }
-}
-impl AsRef<Node> for Placeholder {
-    fn as_ref(&self) -> &Node {
-        static NODE: Node = Node;
-        &NODE
-    }
-}
-impl AsRef<Node> for Node {
-    fn as_ref(&self) -> &Node {
-        self
-    }
-}
+pub type Node = web_sys::Node;
+pub type Text = web_sys::Text;
+pub type Element = web_sys::Element;
+pub type Placeholder = web_sys::Comment;
+pub type Event = wasm_bindgen::JsValue;
+pub type ClassList = web_sys::DomTokenList;
+pub type CssStyleDeclaration = web_sys::CssStyleDeclaration;
+pub type TemplateElement = web_sys::HtmlTemplateElement;
 
 impl Dom {
     pub fn intern(text: &str) -> &str {
@@ -55,15 +25,15 @@ impl Dom {
     }
 
     pub fn create_element(tag: &str, namespace: Option<&str>) -> Element {
-        Element
+        panic!("Dom::create_element is a browser-only API and cannot be called on the server.")
     }
 
     pub fn create_text_node(text: &str) -> Text {
-        Text
+        panic!("Dom::create_text_node is a browser-only API and cannot be called on the server.")
     }
 
     pub fn create_placeholder() -> Placeholder {
-        Placeholder
+        panic!("Dom::create_placeholder is a browser-only API and cannot be called on the server.")
     }
 
     pub fn set_text(node: &Text, text: &str) {}
@@ -112,9 +82,9 @@ impl Dom {
         true
     }
 
-    pub fn set_property_or_value(el: &Element, key: &str, value: &wasm_bindgen::JsValue) {}
+    pub fn set_property_or_value(el: &Element, key: &str, value: &JsValue) {}
 
-    pub fn set_property(el: &Element, key: &str, value: &wasm_bindgen::JsValue) {}
+    pub fn set_property(el: &Element, key: &str, value: &JsValue) {}
 
     pub fn add_event_listener(
         el: &Element,
@@ -136,7 +106,7 @@ impl Dom {
     where
         T: CastFrom<Element>,
     {
-        T::cast_from(Element).unwrap()
+        panic!("Dom::event_target is a browser-only API and cannot be called on the server.")
     }
 
     pub fn add_event_listener_delegated(
@@ -149,7 +119,7 @@ impl Dom {
     }
 
     pub fn class_list(el: &Element) -> ClassList {
-        ClassList
+        panic!("Dom::class_list is a browser-only API and cannot be called on the server.")
     }
 
     pub fn add_class(list: &ClassList, name: &str) {}
@@ -157,7 +127,7 @@ impl Dom {
     pub fn remove_class(list: &ClassList, name: &str) {}
 
     pub fn style(el: &Element) -> CssStyleDeclaration {
-        CssStyleDeclaration
+        panic!("Dom::style is a browser-only API and cannot be called on the server.")
     }
 
     pub fn set_css_property(
@@ -174,19 +144,19 @@ impl Dom {
     where
         V: ToTemplate + 'static,
     {
-        TemplateElement
+        panic!("Dom::get_template is a browser-only API and cannot be called on the server.")
     }
 
     pub fn clone_template(tpl: &TemplateElement) -> Element {
-        Element
+        panic!("Dom::clone_template is a browser-only API and cannot be called on the server.")
     }
 
     pub fn create_element_from_html(html: Cow<'static, str>) -> Element {
-        Element
+        panic!("Dom::create_element_from_html is a browser-only API and cannot be called on the server.")
     }
 
     pub fn create_svg_element_from_html(html: Cow<'static, str>) -> Element {
-        Element
+        panic!("Dom::create_svg_element_from_html is a browser-only API and cannot be called on the server.")
     }
 }
 
@@ -206,7 +176,7 @@ impl Mountable for Text {
     fn elements(&self) -> Vec<Element> { vec![] }
 }
 
-impl Mountable for Placeholder {
+impl Mountable for Comment {
     fn unmount(&mut self) {}
     fn mount(&mut self, _parent: &Element, _marker: Option<&Node>) {}
     fn try_mount(&mut self, _parent: &Element, _marker: Option<&Node>) -> bool { true }
@@ -223,15 +193,21 @@ impl Mountable for Element {
 }
 
 impl CastFrom<Node> for Text {
-    fn cast_from(_node: Node) -> Option<Text> { Some(Text) }
+    fn cast_from(node: Node) -> Option<Text> {
+        None
+    }
 }
 
-impl CastFrom<Node> for Placeholder {
-    fn cast_from(_node: Node) -> Option<Placeholder> { Some(Placeholder) }
+impl CastFrom<Node> for Comment {
+    fn cast_from(node: Node) -> Option<Comment> {
+        None
+    }
 }
 
 impl CastFrom<Node> for Element {
-    fn cast_from(_node: Node) -> Option<Element> { Some(Element) }
+    fn cast_from(node: Node) -> Option<Element> {
+        None
+    }
 }
 
 impl<T> CastFrom<wasm_bindgen::JsValue> for T
