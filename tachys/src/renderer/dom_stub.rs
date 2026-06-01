@@ -5,7 +5,6 @@ use super::{CastFrom, RemoveEventHandler};
 use crate::view::{Mountable, ToTemplate};
 use std::borrow::Cow;
 use wasm_bindgen::JsValue;
-use web_sys::{Comment, DomTokenList, CssStyleDeclaration, HtmlTemplateElement};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Dom;
