@@ -187,4 +187,4 @@ unexpected_cfgs = { level = "warn", check-cfg = [
 ] }
 
 [patch.crates-io]
-wasm-streams = { git = "https://github.com/codeitlikemiley/wasm-streams", rev = "e5adf3cbfdc57b995781d5e6fd15c55057ccd2c4" }
+wasm-streams = { path = "../wasm-streams" }

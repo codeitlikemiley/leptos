@@ -363,16 +363,20 @@ pub use serde_json;
 #[cfg(feature = "tracing")]
 #[doc(hidden)]
 pub use tracing;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 #[doc(hidden)]
 pub use wasm_bindgen;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 #[doc(hidden)]
 pub use wasm_split_helpers as wasm_split;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 #[doc(hidden)]
 pub use web_sys;
 
 #[doc(hidden)]
 pub mod __reexports {
     pub use send_wrapper;
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
     pub use wasm_bindgen_futures;
 }
 

@@ -1,8 +1,16 @@
 use crate::{children::TypedChildrenFn, mount, IntoView};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use leptos_dom::helpers::document;
 use leptos_macro::component;
 use reactive_graph::{effect::Effect, graph::untrack, owner::Owner};
 use std::sync::Arc;
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+#[allow(missing_docs)]
+pub mod web_sys {
+    #[derive(Clone, Debug)]
+    pub struct Element;
+}
 
 /// Renders components somewhere else in the DOM.
 ///
@@ -28,58 +36,60 @@ pub fn Portal<V>(
 where
     V: IntoView + 'static,
 {
-    if cfg!(target_arch = "wasm32")
-        && Owner::current_shared_context()
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    {
+        if Owner::current_shared_context()
             .map(|sc| sc.is_browser())
             .unwrap_or(true)
-    {
-        use send_wrapper::SendWrapper;
-        use wasm_bindgen::JsCast;
+        {
+            use send_wrapper::SendWrapper;
+            use wasm_bindgen::JsCast;
 
-        let mount = mount.unwrap_or_else(|| {
-            document().body().expect("body to exist").unchecked_into()
-        });
-        let children = children.into_inner();
+            let mount = mount.unwrap_or_else(|| {
+                document().body().expect("body to exist").unchecked_into()
+            });
+            let children = children.into_inner();
 
-        Effect::new(move |_| {
-            let container = if is_svg {
-                document()
-                    .create_element_ns(Some("http://www.w3.org/2000/svg"), "g")
-                    .expect("SVG element creation to work")
-            } else {
-                document()
-                    .create_element("div")
-                    .expect("HTML element creation to work")
-            };
+            Effect::new(move |_| {
+                let container = if is_svg {
+                    document()
+                        .create_element_ns(Some("http://www.w3.org/2000/svg"), "g")
+                        .expect("SVG element creation to work")
+                } else {
+                    document()
+                        .create_element("div")
+                        .expect("HTML element creation to work")
+                };
 
-            let render_root = if use_shadow {
-                container
-                    .attach_shadow(&web_sys::ShadowRootInit::new(
-                        web_sys::ShadowRootMode::Open,
-                    ))
-                    .map(|root| root.unchecked_into())
-                    .unwrap_or(container.clone())
-            } else {
-                container.clone()
-            };
+                let render_root = if use_shadow {
+                    container
+                        .attach_shadow(&web_sys::ShadowRootInit::new(
+                            web_sys::ShadowRootMode::Open,
+                        ))
+                        .map(|root| root.unchecked_into())
+                        .unwrap_or(container.clone())
+                } else {
+                    container.clone()
+                };
 
-            let _ = mount.append_child(&container);
-            let handle = SendWrapper::new((
-                mount::mount_to(render_root.unchecked_into(), {
-                    let children = Arc::clone(&children);
-                    move || untrack(|| children())
-                }),
-                mount.clone(),
-                container,
-            ));
+                let _ = mount.append_child(&container);
+                let handle = SendWrapper::new((
+                    mount::mount_to(render_root.unchecked_into(), {
+                        let children = Arc::clone(&children);
+                        move || untrack(|| children())
+                    }),
+                    mount.clone(),
+                    container,
+                ));
 
-            Owner::on_cleanup({
-                move || {
-                    let (handle, mount, container) = handle.take();
-                    drop(handle);
-                    let _ = mount.remove_child(&container);
-                }
-            })
-        });
+                Owner::on_cleanup({
+                    move || {
+                        let (handle, mount, container) = handle.take();
+                        drop(handle);
+                        let _ = mount.remove_child(&container);
+                    }
+                })
+            });
+        }
     }
 }

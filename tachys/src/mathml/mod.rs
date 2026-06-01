@@ -7,6 +7,9 @@ use crate::{
 };
 use std::fmt::Debug;
 
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::web_sys;
+
 macro_rules! mathml_global {
 	($tag:ty, $attr:ty) => {
 		paste::paste! {

@@ -12,10 +12,6 @@ edition.workspace = true
 
 [dependencies]
 throw_error = { workspace = true }
-any_spawner = { workspace = true, features = [
-  "wasm-bindgen",
-  "futures-executor",
-] }
 base64 = { optional = true, workspace = true, default-features = true }
 cfg-if = { workspace = true, default-features = true }
 hydration_context = { workspace = true }
@@ -46,26 +42,10 @@ typed-builder = { workspace = true, default-features = true }
 typed-builder-macro = { workspace = true, default-features = true }
 serde = { workspace = true, default-features = true }
 serde_json = { workspace = true, default-features = true }
-web-sys = { features = [
-  "ShadowRoot",
-  "ShadowRootInit",
-  "ShadowRootMode",
-  "Event",
-  "FormData",
-  "HtmlButtonElement",
-  "HtmlFormElement",
-  "HtmlInputElement",
-  "SubmitEvent",
-  "Url",
-  "UrlSearchParams",
-], workspace = true, default-features = true }
-wasm-bindgen = { workspace = true, default-features = true }
-wasm-bindgen-futures = { workspace = true, default-features = true }
 serde_qs = { workspace = true, default-features = true }
 slotmap = { workspace = true, default-features = true }
 futures = { workspace = true, default-features = true }
 send_wrapper = { workspace = true, default-features = true }
-wasm_split_helpers = { workspace = true, default-features = true }
 subsecond = { workspace = true, default-features = true, optional = true }
 dioxus-cli-config = { workspace = true, default-features = true, optional = true }
 dioxus-devtools = { workspace = true, default-features = true, optional = true }
@@ -222,6 +202,29 @@ unexpected_cfgs = { level = "warn", check-cfg = [
 
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 server_fn = { workspace = true, features = ["form-redirects", "browser"] }
+any_spawner = { workspace = true, features = [
+  "wasm-bindgen",
+  "futures-executor",
+] }
+wasm-bindgen = { workspace = true, default-features = true }
+wasm-bindgen-futures = { workspace = true, default-features = true }
+wasm_split_helpers = { workspace = true, default-features = true }
+web-sys = { features = [
+  "ShadowRoot",
+  "ShadowRootInit",
+  "ShadowRootMode",
+  "Event",
+  "FormData",
+  "HtmlButtonElement",
+  "HtmlFormElement",
+  "HtmlInputElement",
+  "SubmitEvent",
+  "Url",
+  "UrlSearchParams",
+], workspace = true, default-features = true }
 
 [target.'cfg(not(all(target_arch = "wasm32", target_os = "unknown")))'.dependencies]
 server_fn = { workspace = true, features = ["form-redirects"] }
+any_spawner = { workspace = true, features = [
+  "futures-executor",
+] }

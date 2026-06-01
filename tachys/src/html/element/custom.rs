@@ -2,6 +2,10 @@ use super::ElementWithChildren;
 use crate::html::element::{ElementType, HtmlElement};
 use std::fmt::Debug;
 
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::web_sys;
+
+
 /// Creates a custom element.
 #[track_caller]
 pub fn custom<E>(tag: E) -> HtmlElement<Custom<E>, (), ()>

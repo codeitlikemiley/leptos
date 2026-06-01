@@ -1,4 +1,6 @@
 use super::{Attribute, NextAttribute};
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::wasm_bindgen;
 use crate::{
     erased::{Erased, ErasedLocal},
     html::attribute::NamedAttributeKey,

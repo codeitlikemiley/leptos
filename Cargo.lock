@@ -4666,7 +4666,6 @@ dependencies = [
 [[package]]
 name = "wasm-streams"
 version = "0.7.0"
-source = "git+https://github.com/codeitlikemiley/wasm-streams?rev=e5adf3cbfdc57b995781d5e6fd15c55057ccd2c4#e5adf3cbfdc57b995781d5e6fd15c55057ccd2c4"
 dependencies = [
  "futures-util",
  "js-sys",

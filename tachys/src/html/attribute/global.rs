@@ -101,6 +101,7 @@ pub trait OnAttribute<E, F> {
     fn on(self, event: E, cb: F) -> Self::Output;
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 impl<El, At, Ch, E, F> OnAttribute<E, F> for HtmlElement<El, At, Ch>
 where
     El: ElementType + Send,
@@ -109,6 +110,23 @@ where
     E: EventDescriptor + Send + 'static,
     E::EventType: 'static,
     E::EventType: From<crate::renderer::types::Event>,
+    F: FnMut(E::EventType) + 'static,
+{
+    type Output = <Self as AddAnyAttr>::Output<On<E, F>>;
+
+    fn on(self, event: E, cb: F) -> Self::Output {
+        self.add_any_attr(on(event, cb))
+    }
+}
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+impl<El, At, Ch, E, F> OnAttribute<E, F> for HtmlElement<El, At, Ch>
+where
+    El: ElementType + Send,
+    At: Attribute + Send,
+    Ch: RenderHtml + Send,
+    E: EventDescriptor + Send + 'static,
+    E::EventType: 'static,
     F: FnMut(E::EventType) + 'static,
 {
     type Output = <Self as AddAnyAttr>::Output<On<E, F>>;
@@ -127,6 +145,7 @@ pub trait OnTargetAttribute<E, F, T> {
     fn on_target(self, event: E, cb: F) -> Self::Output;
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 impl<El, At, Ch, E, F> OnTargetAttribute<E, F, Self> for HtmlElement<El, At, Ch>
 where
     El: ElementType + Send,
@@ -135,6 +154,25 @@ where
     E: EventDescriptor + Send + 'static,
     E::EventType: 'static,
     E::EventType: From<crate::renderer::types::Event>,
+    F: FnMut(Targeted<E::EventType, <Self as HasElementType>::ElementType>)
+        + 'static,
+{
+    type Output =
+        <Self as AddAnyAttr>::Output<On<E, Box<dyn FnMut(E::EventType)>>>;
+
+    fn on_target(self, event: E, cb: F) -> Self::Output {
+        self.add_any_attr(on_target::<E, HtmlElement<El, At, Ch>, F>(event, cb))
+    }
+}
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+impl<El, At, Ch, E, F> OnTargetAttribute<E, F, Self> for HtmlElement<El, At, Ch>
+where
+    El: ElementType + Send,
+    At: Attribute + Send,
+    Ch: RenderHtml + Send,
+    E: EventDescriptor + Send + 'static,
+    E::EventType: 'static,
     F: FnMut(Targeted<E::EventType, <Self as HasElementType>::ElementType>)
         + 'static,
 {

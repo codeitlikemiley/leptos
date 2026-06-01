@@ -7,6 +7,8 @@ use crate::{
     view::{Position, ToTemplate},
 };
 use send_wrapper::SendWrapper;
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::web_sys;
 use std::{
     borrow::Cow,
     cell::RefCell,
@@ -101,6 +103,7 @@ impl<E, T> From<E> for Targeted<E, T> {
 }
 
 /// Creates an [`Attribute`] that will add an event listener to an element.
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub fn on<E, F>(event: E, cb: F) -> On<E, F>
 where
     F: FnMut(E::EventType) + 'static,
@@ -116,8 +119,24 @@ where
     }
 }
 
+/// Creates an [`Attribute`] that will add an event listener to an element.
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+pub fn on<E, F>(event: E, _cb: F) -> On<E, F>
+where
+    E: EventDescriptor + Send + 'static,
+    E::EventType: 'static,
+{
+    On {
+        event,
+        #[cfg(feature = "reactive_graph")]
+        owner: reactive_graph::owner::Owner::current().unwrap_or_default(),
+        cb: None,
+    }
+}
+
 /// Creates an [`Attribute`] that will add an event listener with a typed target to an element.
 #[allow(clippy::type_complexity)]
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub fn on_target<E, T, F>(
     event: E,
     mut cb: F,
@@ -128,10 +147,24 @@ where
         + 'static,
     E: EventDescriptor + Send + 'static,
     E::EventType: 'static,
-
     E::EventType: From<crate::renderer::types::Event>,
 {
     on(event, Box::new(move |ev: E::EventType| cb(ev.into())))
+}
+
+/// Creates an [`Attribute`] that will add an event listener with a typed target to an element.
+#[allow(clippy::type_complexity)]
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+pub fn on_target<E, T, F>(
+    event: E,
+    _cb: F,
+) -> On<E, Box<dyn FnMut(E::EventType)>>
+where
+    T: HasElementType,
+    E: EventDescriptor + Send + 'static,
+    E::EventType: 'static,
+{
+    on(event, Box::new(move |_| {}))
 }
 
 /// An [`Attribute`] that adds an event listener to an element.
@@ -157,6 +190,7 @@ where
     }
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 impl<E, F> On<E, F>
 where
     F: EventCallback<E::EventType>,
@@ -173,9 +207,6 @@ where
             el: &crate::renderer::types::Element,
             cb: Box<dyn FnMut(crate::renderer::types::Event)>,
             name: Cow<'static, str>,
-            // TODO investigate: does passing this as an option
-            // (rather than, say, having a const DELEGATED: bool)
-            // add to binary size?
             delegation_key: Option<Cow<'static, str>>,
         ) -> RemoveEventHandler<crate::renderer::types::Element> {
             match delegation_key {
@@ -253,6 +284,30 @@ where
     }
 }
 
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+impl<E, F> On<E, F>
+where
+    E: EventDescriptor + Send + 'static,
+    E::EventType: 'static,
+{
+    /// Attaches the event listener to the element.
+    pub fn attach(
+        self,
+        el: &crate::renderer::types::Element,
+    ) -> RemoveEventHandler<crate::renderer::types::Element> {
+        RemoveEventHandler::new(|| {})
+    }
+
+    /// Attaches the event listener to the element as a listener that is triggered during the capture phase,
+    /// meaning it will fire before any event listeners further down in the DOM.
+    pub fn attach_capture(
+        self,
+        el: &crate::renderer::types::Element,
+    ) -> RemoveEventHandler<crate::renderer::types::Element> {
+        RemoveEventHandler::new(|| {})
+    }
+}
+
 impl<E, F> Debug for On<E, F>
 where
     E: Debug,
@@ -262,17 +317,16 @@ where
     }
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 impl<E, F> Attribute for On<E, F>
 where
     F: EventCallback<E::EventType>,
     E: EventDescriptor + Send + 'static,
     E::EventType: 'static,
-
     E::EventType: From<crate::renderer::types::Event>,
 {
     const MIN_LENGTH: usize = 0;
     type AsyncOutput = Self;
-    // a function that can be called once to remove the event listener
     type State = (
         crate::renderer::types::Element,
         Option<RemoveEventHandler<crate::renderer::types::Element>>,
@@ -362,13 +416,94 @@ where
     }
 }
 
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+impl<E, F> Attribute for On<E, F>
+where
+    E: EventDescriptor + Send + 'static,
+    E::EventType: 'static,
+{
+    const MIN_LENGTH: usize = 0;
+    type AsyncOutput = Self;
+    type State = (
+        crate::renderer::types::Element,
+        Option<RemoveEventHandler<crate::renderer::types::Element>>,
+    );
+    type Cloneable = On<E, SharedEventCallback<E::EventType>>;
+    type CloneableOwned = On<E, SharedEventCallback<E::EventType>>;
+
+    #[inline(always)]
+    fn html_len(&self) -> usize {
+        0
+    }
+
+    #[inline(always)]
+    fn to_html(
+        self,
+        _buf: &mut String,
+        _class: &mut String,
+        _style: &mut String,
+        _inner_html: &mut String,
+    ) {
+    }
+
+    #[inline(always)]
+    fn hydrate<const FROM_SERVER: bool>(
+        self,
+        el: &crate::renderer::types::Element,
+    ) -> Self::State {
+        (el.clone(), None)
+    }
+
+    #[inline(always)]
+    fn build(self, el: &crate::renderer::types::Element) -> Self::State {
+        (el.clone(), None)
+    }
+
+    #[inline(always)]
+    fn rebuild(self, _state: &mut Self::State) {}
+
+    fn into_cloneable(self) -> Self::Cloneable {
+        panic!("into_cloneable is browser-only");
+    }
+
+    fn into_cloneable_owned(self) -> Self::CloneableOwned {
+        panic!("into_cloneable_owned is browser-only");
+    }
+
+    fn dry_resolve(&mut self) {}
+
+    async fn resolve(self) -> Self::AsyncOutput {
+        self
+    }
+
+    fn keys(&self) -> Vec<NamedAttributeKey> {
+        vec![]
+    }
+}
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 impl<E, F> NextAttribute for On<E, F>
 where
     F: EventCallback<E::EventType>,
     E: EventDescriptor + Send + 'static,
     E::EventType: 'static,
-
     E::EventType: From<crate::renderer::types::Event>,
+{
+    next_attr_output_type!(Self, NewAttr);
+
+    fn add_any_attr<NewAttr: Attribute>(
+        self,
+        new_attr: NewAttr,
+    ) -> Self::Output<NewAttr> {
+        next_attr_combine!(self, new_attr)
+    }
+}
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+impl<E, F> NextAttribute for On<E, F>
+where
+    E: EventDescriptor + Send + 'static,
+    E::EventType: 'static,
 {
     next_attr_output_type!(Self, NewAttr);
 

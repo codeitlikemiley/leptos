@@ -13,7 +13,11 @@ use reactive_graph::{
 };
 use send_wrapper::SendWrapper;
 use std::{cell::Cell, ops::DerefMut};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::JsCast;
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::wasm_bindgen::JsCast;
 
 /// A reactive reference to a DOM node that can be used with the `node_ref` attribute.
 #[derive(Debug)]
@@ -88,11 +92,14 @@ where
     E: ElementType,
     E::Output: JsCast + 'static,
 {
-    fn load(self, el: &crate::renderer::types::Element) {
-        // safe to construct SendWrapper here, because it will only run in the browser
-        // so it will always be accessed or dropped from the main thread
-        self.0
-            .set(Some(SendWrapper::new(el.clone().unchecked_into())));
+    fn load(self, _el: &crate::renderer::types::Element) {
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+        {
+            // safe to construct SendWrapper here, because it will only run in the browser
+            // so it will always be accessed or dropped from the main thread
+            self.0
+                .set(Some(SendWrapper::new(_el.clone().unchecked_into())));
+        }
     }
 }
 

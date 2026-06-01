@@ -5,10 +5,10 @@ use any_spawner::Executor;
 use reactive_graph::owner::Owner;
 #[cfg(debug_assertions)]
 use std::cell::Cell;
-use tachys::{
-    dom::body,
-    view::{Mountable, Render},
-};
+use tachys::view::{Mountable, Render};
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use tachys::dom::body;
 #[cfg(feature = "hydrate")]
 use tachys::{
     hydration::Cursor,
@@ -16,7 +16,13 @@ use tachys::{
 };
 #[cfg(feature = "hydrate")]
 use wasm_bindgen::JsCast;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use web_sys::HtmlElement;
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+#[derive(Clone, Debug)]
+#[allow(missing_docs)]
+pub struct HtmlElement;
 
 #[cfg(feature = "hydrate")]
 /// Hydrates the app described by the provided function, starting at `<body>`.
@@ -60,46 +66,56 @@ where
     F: FnOnce() -> N + 'static,
     N: IntoView,
 {
-    use hydration_context::HydrateSharedContext;
-    use std::sync::Arc;
-
-    // use wasm-bindgen-futures to drive the reactive system
-    // we ignore the return value because an Err here just means the wasm-bindgen executor is
-    // already initialized, which is not an issue
-    _ = Executor::init_wasm_bindgen();
-
-    #[cfg(debug_assertions)]
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
     {
-        if !cfg!(feature = "hydrate") && FIRST_CALL.get() {
-            logging::warn!(
-                "It seems like you're trying to use Leptos in hydration mode, \
-                 but the `hydrate` feature is not enabled on the `leptos` \
-                 crate. Add `features = [\"hydrate\"]` to your Cargo.toml for \
-                 the crate to work properly.\n\nNote that hydration and \
-                 client-side rendering now use separate functions from \
-                 leptos::mount: you are calling a hydration function."
-            );
+        use hydration_context::HydrateSharedContext;
+        use std::sync::Arc;
+
+        // use wasm-bindgen-futures to drive the reactive system
+        // we ignore the return value because an Err here just means the wasm-bindgen executor is
+        // already initialized, which is not an issue
+        _ = Executor::init_wasm_bindgen();
+
+        #[cfg(debug_assertions)]
+        {
+            if !cfg!(feature = "hydrate") && FIRST_CALL.get() {
+                logging::warn!(
+                    "It seems like you're trying to use Leptos in hydration mode, \
+                     but the `hydrate` feature is not enabled on the `leptos` \
+                     crate. Add `features = [\"hydrate\"]` to your Cargo.toml for \
+                     the crate to work properly.\n\nNote that hydration and \
+                     client-side rendering now use separate functions from \
+                     leptos::mount: you are calling a hydration function."
+                );
+            }
+            FIRST_CALL.set(false);
         }
-        FIRST_CALL.set(false);
+
+        // create a new reactive owner and use it as the root node to run the app
+        let owner = Owner::new_root(Some(Arc::new(HydrateSharedContext::new())));
+        let mountable = owner.with(move || {
+            let view = f().into_view();
+            view.hydrate::<true>(
+                &Cursor::new(parent.unchecked_into()),
+                &PositionState::default(),
+            )
+        });
+
+        if let Some(sc) = Owner::current_shared_context() {
+            sc.hydration_complete();
+        }
+
+        // returns a handle that owns the owner
+        // when this is dropped, it will clean up the reactive system and unmount the view
+        UnmountHandle { owner, mountable }
     }
-
-    // create a new reactive owner and use it as the root node to run the app
-    let owner = Owner::new_root(Some(Arc::new(HydrateSharedContext::new())));
-    let mountable = owner.with(move || {
-        let view = f().into_view();
-        view.hydrate::<true>(
-            &Cursor::new(parent.unchecked_into()),
-            &PositionState::default(),
-        )
-    });
-
-    if let Some(sc) = Owner::current_shared_context() {
-        sc.hydration_complete();
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    {
+        _ = parent;
+        let owner = Owner::new();
+        let mountable = owner.with(move || f().into_view().build());
+        UnmountHandle { owner, mountable }
     }
-
-    // returns a handle that owns the owner
-    // when this is dropped, it will clean up the reactive system and unmount the view
-    UnmountHandle { owner, mountable }
 }
 
 #[cfg(feature = "hydrate")]
@@ -112,53 +128,63 @@ where
     F: FnOnce() -> N + 'static,
     N: IntoView,
 {
-    use hydration_context::HydrateSharedContext;
-    use std::sync::Arc;
-
-    // use wasm-bindgen-futures to drive the reactive system
-    // we ignore the return value because an Err here just means the wasm-bindgen executor is
-    // already initialized, which is not an issue
-    _ = Executor::init_wasm_bindgen();
-
-    #[cfg(debug_assertions)]
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
     {
-        if !cfg!(feature = "hydrate") && FIRST_CALL.get() {
-            logging::warn!(
-                "It seems like you're trying to use Leptos in hydration mode, \
-                 but the `hydrate` feature is not enabled on the `leptos` \
-                 crate. Add `features = [\"hydrate\"]` to your Cargo.toml for \
-                 the crate to work properly.\n\nNote that hydration and \
-                 client-side rendering now use separate functions from \
-                 leptos::mount: you are calling a hydration function."
-            );
+        use hydration_context::HydrateSharedContext;
+        use std::sync::Arc;
+
+        // use wasm-bindgen-futures to drive the reactive system
+        // we ignore the return value because an Err here just means the wasm-bindgen executor is
+        // already initialized, which is not an issue
+        _ = Executor::init_wasm_bindgen();
+
+        #[cfg(debug_assertions)]
+        {
+            if !cfg!(feature = "hydrate") && FIRST_CALL.get() {
+                logging::warn!(
+                    "It seems like you're trying to use Leptos in hydration mode, \
+                     but the `hydrate` feature is not enabled on the `leptos` \
+                     crate. Add `features = [\"hydrate\"]` to your Cargo.toml for \
+                     the crate to work properly.\n\nNote that hydration and \
+                     client-side rendering now use separate functions from \
+                     leptos::mount: you are calling a hydration function."
+                );
+            }
+            FIRST_CALL.set(false);
         }
-        FIRST_CALL.set(false);
-    }
 
-    // create a new reactive owner and use it as the root node to run the app
-    let owner = Owner::new_root(Some(Arc::new(HydrateSharedContext::new())));
-    let mountable = owner
-        .with(move || {
-            use reactive_graph::computed::ScopedFuture;
+        // create a new reactive owner and use it as the root node to run the app
+        let owner = Owner::new_root(Some(Arc::new(HydrateSharedContext::new())));
+        let mountable = owner
+            .with(move || {
+                use reactive_graph::computed::ScopedFuture;
 
-            ScopedFuture::new(async move {
-                let view = f().into_view();
-                view.hydrate_async(
-                    &Cursor::new(parent.unchecked_into()),
-                    &PositionState::default(),
-                )
-                .await
+                ScopedFuture::new(async move {
+                    let view = f().into_view();
+                    view.hydrate_async(
+                        &Cursor::new(parent.unchecked_into()),
+                        &PositionState::default(),
+                    )
+                    .await
+                })
             })
-        })
-        .await;
+            .await;
 
-    if let Some(sc) = Owner::current_shared_context() {
-        sc.hydration_complete();
+        if let Some(sc) = Owner::current_shared_context() {
+            sc.hydration_complete();
+        }
+
+        // returns a handle that owns the owner
+        // when this is dropped, it will clean up the reactive system and unmount the view
+        UnmountHandle { owner, mountable }
     }
-
-    // returns a handle that owns the owner
-    // when this is dropped, it will clean up the reactive system and unmount the view
-    UnmountHandle { owner, mountable }
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    {
+        _ = parent;
+        let owner = Owner::new();
+        let mountable = owner.with(move || f().into_view().build());
+        UnmountHandle { owner, mountable }
+    }
 }
 
 /// Runs the provided closure and mounts the result to the `<body>`.
@@ -167,8 +193,15 @@ where
     F: FnOnce() -> N + 'static,
     N: IntoView,
 {
-    let owner = mount_to(body(), f);
-    owner.forget();
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    {
+        let owner = mount_to(body(), f);
+        owner.forget();
+    }
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    {
+        _ = f;
+    }
 }
 
 /// Runs the provided closure and mounts the result to the provided element.
@@ -177,39 +210,49 @@ where
     F: FnOnce() -> N + 'static,
     N: IntoView,
 {
-    // use wasm-bindgen-futures to drive the reactive system
-    // we ignore the return value because an Err here just means the wasm-bindgen executor is
-    // already initialized, which is not an issue
-    _ = Executor::init_wasm_bindgen();
-
-    #[cfg(debug_assertions)]
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
     {
-        if !cfg!(feature = "csr") && FIRST_CALL.get() {
-            logging::warn!(
-                "It seems like you're trying to use Leptos in client-side \
-                 rendering mode, but the `csr` feature is not enabled on the \
-                 `leptos` crate. Add `features = [\"csr\"]` to your \
-                 Cargo.toml for the crate to work properly.\n\nNote that \
-                 hydration and client-side rendering now use different \
-                 functions from leptos::mount. You are using a client-side \
-                 rendering mount function."
-            );
+        // use wasm-bindgen-futures to drive the reactive system
+        // we ignore the return value because an Err here just means the wasm-bindgen executor is
+        // already initialized, which is not an issue
+        _ = Executor::init_wasm_bindgen();
+
+        #[cfg(debug_assertions)]
+        {
+            if !cfg!(feature = "csr") && FIRST_CALL.get() {
+                logging::warn!(
+                    "It seems like you're trying to use Leptos in client-side \
+                     rendering mode, but the `csr` feature is not enabled on the \
+                     `leptos` crate. Add `features = [\"csr\"]` to your \
+                     Cargo.toml for the crate to work properly.\n\nNote that \
+                     hydration and client-side rendering now use different \
+                     functions from leptos::mount. You are using a client-side \
+                     rendering mount function."
+                );
+            }
+            FIRST_CALL.set(false);
         }
-        FIRST_CALL.set(false);
+
+        // create a new reactive owner and use it as the root node to run the app
+        let owner = Owner::new();
+        let mountable = owner.with(move || {
+            let view = f().into_view();
+            let mut mountable = view.build();
+            mountable.mount(&parent, None);
+            mountable
+        });
+
+        // returns a handle that owns the owner
+        // when this is dropped, it will clean up the reactive system and unmount the view
+        UnmountHandle { owner, mountable }
     }
-
-    // create a new reactive owner and use it as the root node to run the app
-    let owner = Owner::new();
-    let mountable = owner.with(move || {
-        let view = f().into_view();
-        let mut mountable = view.build();
-        mountable.mount(&parent, None);
-        mountable
-    });
-
-    // returns a handle that owns the owner
-    // when this is dropped, it will clean up the reactive system and unmount the view
-    UnmountHandle { owner, mountable }
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    {
+        _ = parent;
+        let owner = Owner::new();
+        let mountable = owner.with(move || f().into_view().build());
+        UnmountHandle { owner, mountable }
+    }
 }
 
 /// Runs the provided closure and mounts the result to the provided element.

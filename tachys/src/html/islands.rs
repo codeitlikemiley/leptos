@@ -395,6 +395,7 @@ where
         }
         position.set(Position::NextChild);
 
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
         if let Some(on_hydrate) = self.on_hydrate {
             use crate::{
                 hydration::failed_to_cast_element, renderer::CastFrom,
@@ -412,7 +413,7 @@ where
                 on_hydrate as Box<dyn Fn()>,
             );
             _ = js_sys::Reflect::set(
-                &el,
+                el.as_ref(),
                 &wasm_bindgen::JsValue::from_str("$$on_hydrate"),
                 &cb.into_js_value(),
             );

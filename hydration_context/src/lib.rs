@@ -12,17 +12,17 @@
 #![forbid(unsafe_code)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-#[cfg(feature = "browser")]
+#[cfg(all(feature = "browser", target_arch = "wasm32", target_os = "unknown"))]
 #[cfg_attr(docsrs, doc(cfg(feature = "browser")))]
 mod csr;
-#[cfg(feature = "browser")]
+#[cfg(all(feature = "browser", target_arch = "wasm32", target_os = "unknown"))]
 #[cfg_attr(docsrs, doc(cfg(feature = "browser")))]
 mod hydrate;
 mod ssr;
-#[cfg(feature = "browser")]
+#[cfg(all(feature = "browser", target_arch = "wasm32", target_os = "unknown"))]
 pub use csr::*;
 use futures::Stream;
-#[cfg(feature = "browser")]
+#[cfg(all(feature = "browser", target_arch = "wasm32", target_os = "unknown"))]
 pub use hydrate::*;
 use serde::{Deserialize, Serialize};
 pub use ssr::*;

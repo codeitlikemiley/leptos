@@ -1,5 +1,6 @@
 //! Utilities for simple isomorphic logging to the console or terminal.
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::JsValue;
 
 /// Uses `println!()`-style formatting to log something to the console (in the browser)
@@ -72,21 +73,27 @@ const fn log_to_stdout() -> bool {
 /// Log a string to the console (in the browser)
 /// or via `println!()` (if not in the browser).
 pub fn console_log(s: &str) {
-    #[allow(clippy::print_stdout)]
-    if log_to_stdout() {
-        println!("{s}");
-    } else {
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    {
         web_sys::console::log_1(&JsValue::from_str(s));
+    }
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    {
+        #[allow(clippy::print_stdout)]
+        println!("{s}");
     }
 }
 
 /// Log a warning to the console (in the browser)
 /// or via `eprintln!()` (if not in the browser).
 pub fn console_warn(s: &str) {
-    if log_to_stdout() {
-        eprintln!("{s}");
-    } else {
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    {
         web_sys::console::warn_1(&JsValue::from_str(s));
+    }
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    {
+        eprintln!("{s}");
     }
 }
 
@@ -94,10 +101,13 @@ pub fn console_warn(s: &str) {
 /// or via `eprintln!()` (if not in the browser).
 #[inline(always)]
 pub fn console_error(s: &str) {
-    if log_to_stdout() {
-        eprintln!("{s}");
-    } else {
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    {
         web_sys::console::error_1(&JsValue::from_str(s));
+    }
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    {
+        eprintln!("{s}");
     }
 }
 

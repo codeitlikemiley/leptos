@@ -11,7 +11,11 @@ use crate::{
 };
 use send_wrapper::SendWrapper;
 use std::{borrow::Cow, sync::Arc};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::JsValue;
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::wasm_bindgen::JsValue;
 
 /// Creates an [`Attribute`] that will set a DOM property on an element.
 #[inline(always)]

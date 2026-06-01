@@ -17,6 +17,8 @@ tokio = { optional = true, default-features = false, features = [
   "rt",
 ] , workspace = true }
 tracing = { optional = true , workspace = true, default-features = true }
+
+[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 wasm-bindgen-futures = { optional = true , workspace = true, default-features = true }
 
 [dev-dependencies]

@@ -13,7 +13,11 @@ use crate::{
     view::{strings::StrState, Position, PositionState, ToTemplate},
 };
 use oco_ref::Oco;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::JsValue;
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::renderer::dom::JsValue;
 
 /// Retained view state for [`Oco`].
 pub struct OcoStrState {

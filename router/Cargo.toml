@@ -19,26 +19,26 @@ reactive_graph = { workspace = true }
 tachys = { workspace = true, features = ["reactive_graph"] }
 futures = { workspace = true, default-features = true }
 url = { workspace = true, default-features = true }
-js-sys = { workspace = true, default-features = true }
-wasm-bindgen = { workspace = true, default-features = true }
+js-sys = { workspace = true, default-features = true, optional = true }
+wasm-bindgen = { workspace = true, default-features = true, optional = true }
 tracing = { optional = true, workspace = true, default-features = true }
 send_wrapper = { workspace = true, default-features = true }
 thiserror = { workspace = true, default-features = true }
 percent-encoding = { optional = true, workspace = true, default-features = true }
-gloo-net = { workspace = true, default-features = true }
 
-[dependencies.web-sys]
-features = [
+[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
+gloo-net = { workspace = true, default-features = true }
+js-sys = { workspace = true, default-features = true }
+wasm-bindgen = { workspace = true, default-features = true }
+web-sys = { workspace = true, default-features = true, features = [
   "Document",
   "Window",
   "console",
-  # History/Routing
   "History",
   "HtmlAnchorElement",
   "Location",
   "MouseEvent",
   "Url",
-  # Form
   "FormData",
   "HtmlButtonElement",
   "HtmlFormElement",
@@ -46,15 +46,12 @@ features = [
   "SubmitEvent",
   "Url",
   "UrlSearchParams",
-  # Fetching in Hydrate Mode
   "Headers",
   "Request",
   "RequestInit",
   "RequestMode",
   "Response",
-]
-workspace = true
-default-features = true
+] }
 
 [build-dependencies]
 rustc_version = { workspace = true, default-features = true }

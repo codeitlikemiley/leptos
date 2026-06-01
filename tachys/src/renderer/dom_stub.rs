@@ -4,20 +4,96 @@
 use super::{CastFrom, RemoveEventHandler};
 use crate::view::{Mountable, ToTemplate};
 use std::borrow::Cow;
-use wasm_bindgen::JsValue;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct JsValue;
+
+impl JsValue {
+    pub const UNDEFINED: JsValue = JsValue;
+    pub fn from_str(_s: &str) -> Self { JsValue }
+}
+
+macro_rules! impl_from_jsvalue {
+    ($($t:ty),*) => {
+        $(
+            impl From<$t> for JsValue {
+                fn from(_: $t) -> Self { JsValue }
+            }
+            impl From<Option<$t>> for JsValue {
+                fn from(_: Option<$t>) -> Self { JsValue }
+            }
+        )*
+    };
+}
+
+impl_from_jsvalue! {
+    bool,
+    usize, u8, u16, u32, u64, u128,
+    isize, i8, i16, i32, i64, i128,
+    f32, f64,
+    String
+}
+
+impl<'a> From<&'a str> for JsValue {
+    fn from(_: &'a str) -> Self { JsValue }
+}
+impl<'a> From<Option<&'a str>> for JsValue {
+    fn from(_: Option<&'a str>) -> Self { JsValue }
+}
+
+impl<'a> From<&'a String> for JsValue {
+    fn from(_: &'a String) -> Self { JsValue }
+}
+impl<'a> From<Option<&'a String>> for JsValue {
+    fn from(_: Option<&'a String>) -> Self { JsValue }
+}
+
+impl<'a> From<Cow<'a, str>> for JsValue {
+    fn from(_: Cow<'a, str>) -> Self { JsValue }
+}
+impl<'a> From<Option<Cow<'a, str>>> for JsValue {
+    fn from(_: Option<Cow<'a, str>>) -> Self { JsValue }
+}
+
+impl<'a> From<&'a Cow<'a, str>> for JsValue {
+    fn from(_: &'a Cow<'a, str>) -> Self { JsValue }
+}
+impl<'a> From<Option<&'a Cow<'a, str>>> for JsValue {
+    fn from(_: Option<&'a Cow<'a, str>>) -> Self { JsValue }
+}
+
+impl From<Option<JsValue>> for JsValue {
+    fn from(_: Option<JsValue>) -> Self { JsValue }
+}
+
+pub trait JsCast {
+    fn unchecked_into<T>(self) -> T;
+}
+
+impl JsCast for Element {
+    fn unchecked_into<T>(self) -> T { panic!() }
+}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Dom;
 
-pub type Node = web_sys::Node;
-pub type Text = web_sys::Text;
-pub type Comment = web_sys::Comment;
-pub type Element = web_sys::Element;
-pub type Placeholder = web_sys::Comment;
-pub type Event = wasm_bindgen::JsValue;
-pub type ClassList = web_sys::DomTokenList;
-pub type CssStyleDeclaration = web_sys::CssStyleDeclaration;
-pub type TemplateElement = web_sys::HtmlTemplateElement;
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Node;
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Text;
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Comment;
+pub type Placeholder = Comment;
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Element;
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Event;
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClassList;
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CssStyleDeclaration;
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TemplateElement;
 
 impl Dom {
     pub fn intern(text: &str) -> &str {
@@ -201,6 +277,53 @@ impl Dom {
     }
 }
 
+impl Element {
+    pub fn unchecked_into<T>(self) -> T
+    where
+        T: JsCast,
+    {
+        panic!("Element::unchecked_into is a browser-only API and cannot be called on the server.")
+    }
+
+    pub fn tag_name(&self) -> String {
+        String::new()
+    }
+}
+
+impl std::ops::Deref for Element {
+    type Target = Node;
+
+    fn deref(&self) -> &Self::Target {
+        static DUMMY_NODE: Node = Node;
+        &DUMMY_NODE
+    }
+}
+
+impl AsRef<Node> for Element {
+    fn as_ref(&self) -> &Node {
+        static DUMMY_NODE: Node = Node;
+        &DUMMY_NODE
+    }
+}
+
+impl AsRef<Node> for Text {
+    fn as_ref(&self) -> &Node {
+        static DUMMY_NODE: Node = Node;
+        &DUMMY_NODE
+    }
+}
+
+impl AsRef<Node> for Comment {
+    fn as_ref(&self) -> &Node {
+        static DUMMY_NODE: Node = Node;
+        &DUMMY_NODE
+    }
+}
+
+pub fn queue_microtask(task: impl FnOnce() + 'static) {
+    task();
+}
+
 impl Mountable for Node {
     fn unmount(&mut self) {}
     fn mount(&mut self, _parent: &Element, _marker: Option<&Node>) {}
@@ -275,20 +398,23 @@ impl CastFrom<Node> for Element {
     }
 }
 
-impl<T> CastFrom<wasm_bindgen::JsValue> for T
-where
-    T: wasm_bindgen::JsCast,
-{
-    fn cast_from(source: wasm_bindgen::JsValue) -> Option<Self> {
+impl<T> CastFrom<Event> for T {
+    fn cast_from(source: Event) -> Option<Self> {
         None
     }
 }
 
-impl<T> CastFrom<Element> for T
-where
-    T: wasm_bindgen::JsCast,
-{
+impl<T> CastFrom<Element> for T {
     fn cast_from(source: Element) -> Option<Self> {
         None
     }
 }
+
+pub fn event_target_value<T>(event: &T) -> String {
+    String::new()
+}
+
+pub fn event_target_checked(ev: &crate::web_sys::Event) -> bool {
+    false
+}
+

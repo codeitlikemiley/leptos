@@ -13,6 +13,9 @@ use crate::{
 };
 use std::{borrow::Cow, fmt::Debug};
 
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+use crate::web_sys;
+
 macro_rules! svg_elements {
 	($($tag:ident  [$($attr:ty),*]),* $(,)?) => {
         paste::paste! {
