@@ -11,6 +11,7 @@ pub struct Dom;
 
 pub type Node = web_sys::Node;
 pub type Text = web_sys::Text;
+pub type Comment = web_sys::Comment;
 pub type Element = web_sys::Element;
 pub type Placeholder = web_sys::Comment;
 pub type Event = wasm_bindgen::JsValue;
