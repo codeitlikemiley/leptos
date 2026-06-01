@@ -24,15 +24,24 @@ impl Dom {
     }
 
     pub fn create_element(tag: &str, namespace: Option<&str>) -> Element {
-        panic!("Dom::create_element is a browser-only API and cannot be called on the server.")
+        panic!(
+            "Dom::create_element is a browser-only API and cannot be called \
+             on the server."
+        )
     }
 
     pub fn create_text_node(text: &str) -> Text {
-        panic!("Dom::create_text_node is a browser-only API and cannot be called on the server.")
+        panic!(
+            "Dom::create_text_node is a browser-only API and cannot be called \
+             on the server."
+        )
     }
 
     pub fn create_placeholder() -> Placeholder {
-        panic!("Dom::create_placeholder is a browser-only API and cannot be called on the server.")
+        panic!(
+            "Dom::create_placeholder is a browser-only API and cannot be \
+             called on the server."
+        )
     }
 
     pub fn set_text(node: &Text, text: &str) {}
@@ -41,9 +50,18 @@ impl Dom {
 
     pub fn remove_attribute(node: &Element, name: &str) {}
 
-    pub fn insert_node(parent: &Element, new_child: &Node, anchor: Option<&Node>) {}
+    pub fn insert_node(
+        parent: &Element,
+        new_child: &Node,
+        anchor: Option<&Node>,
+    ) {
+    }
 
-    pub fn try_insert_node(parent: &Element, new_child: &Node, anchor: Option<&Node>) -> bool {
+    pub fn try_insert_node(
+        parent: &Element,
+        new_child: &Node,
+        anchor: Option<&Node>,
+    ) -> bool {
         true
     }
 
@@ -72,7 +90,8 @@ impl Dom {
     pub fn mount_before<M>(new_child: &mut M, before: &Node)
     where
         M: Mountable,
-    {}
+    {
+    }
 
     pub fn try_mount_before<M>(new_child: &mut M, before: &Node) -> bool
     where
@@ -105,7 +124,10 @@ impl Dom {
     where
         T: CastFrom<Element>,
     {
-        panic!("Dom::event_target is a browser-only API and cannot be called on the server.")
+        panic!(
+            "Dom::event_target is a browser-only API and cannot be called on \
+             the server."
+        )
     }
 
     pub fn add_event_listener_delegated(
@@ -118,7 +140,10 @@ impl Dom {
     }
 
     pub fn class_list(el: &Element) -> ClassList {
-        panic!("Dom::class_list is a browser-only API and cannot be called on the server.")
+        panic!(
+            "Dom::class_list is a browser-only API and cannot be called on \
+             the server."
+        )
     }
 
     pub fn add_class(list: &ClassList, name: &str) {}
@@ -126,14 +151,18 @@ impl Dom {
     pub fn remove_class(list: &ClassList, name: &str) {}
 
     pub fn style(el: &Element) -> CssStyleDeclaration {
-        panic!("Dom::style is a browser-only API and cannot be called on the server.")
+        panic!(
+            "Dom::style is a browser-only API and cannot be called on the \
+             server."
+        )
     }
 
     pub fn set_css_property(
         style: &CssStyleDeclaration,
         name: &str,
         value: &str,
-    ) {}
+    ) {
+    }
 
     pub fn remove_css_property(style: &CssStyleDeclaration, name: &str) {}
 
@@ -143,52 +172,88 @@ impl Dom {
     where
         V: ToTemplate + 'static,
     {
-        panic!("Dom::get_template is a browser-only API and cannot be called on the server.")
+        panic!(
+            "Dom::get_template is a browser-only API and cannot be called on \
+             the server."
+        )
     }
 
     pub fn clone_template(tpl: &TemplateElement) -> Element {
-        panic!("Dom::clone_template is a browser-only API and cannot be called on the server.")
+        panic!(
+            "Dom::clone_template is a browser-only API and cannot be called \
+             on the server."
+        )
     }
 
     pub fn create_element_from_html(html: Cow<'static, str>) -> Element {
-        panic!("Dom::create_element_from_html is a browser-only API and cannot be called on the server.")
+        panic!(
+            "Dom::create_element_from_html is a browser-only API and cannot \
+             be called on the server."
+        )
     }
 
     pub fn create_svg_element_from_html(html: Cow<'static, str>) -> Element {
-        panic!("Dom::create_svg_element_from_html is a browser-only API and cannot be called on the server.")
+        panic!(
+            "Dom::create_svg_element_from_html is a browser-only API and \
+             cannot be called on the server."
+        )
     }
 }
 
 impl Mountable for Node {
     fn unmount(&mut self) {}
     fn mount(&mut self, _parent: &Element, _marker: Option<&Node>) {}
-    fn try_mount(&mut self, _parent: &Element, _marker: Option<&Node>) -> bool { true }
-    fn insert_before_this(&self, _child: &mut dyn Mountable) -> bool { true }
-    fn elements(&self) -> Vec<Element> { vec![] }
+    fn try_mount(&mut self, _parent: &Element, _marker: Option<&Node>) -> bool {
+        true
+    }
+    fn insert_before_this(&self, _child: &mut dyn Mountable) -> bool {
+        true
+    }
+    fn elements(&self) -> Vec<Element> {
+        vec![]
+    }
 }
 
 impl Mountable for Text {
     fn unmount(&mut self) {}
     fn mount(&mut self, _parent: &Element, _marker: Option<&Node>) {}
-    fn try_mount(&mut self, _parent: &Element, _marker: Option<&Node>) -> bool { true }
-    fn insert_before_this(&self, _child: &mut dyn Mountable) -> bool { true }
-    fn elements(&self) -> Vec<Element> { vec![] }
+    fn try_mount(&mut self, _parent: &Element, _marker: Option<&Node>) -> bool {
+        true
+    }
+    fn insert_before_this(&self, _child: &mut dyn Mountable) -> bool {
+        true
+    }
+    fn elements(&self) -> Vec<Element> {
+        vec![]
+    }
 }
 
 impl Mountable for Comment {
     fn unmount(&mut self) {}
     fn mount(&mut self, _parent: &Element, _marker: Option<&Node>) {}
-    fn try_mount(&mut self, _parent: &Element, _marker: Option<&Node>) -> bool { true }
-    fn insert_before_this(&self, _child: &mut dyn Mountable) -> bool { true }
-    fn elements(&self) -> Vec<Element> { vec![] }
+    fn try_mount(&mut self, _parent: &Element, _marker: Option<&Node>) -> bool {
+        true
+    }
+    fn insert_before_this(&self, _child: &mut dyn Mountable) -> bool {
+        true
+    }
+    fn elements(&self) -> Vec<Element> {
+        vec![]
+    }
 }
 
 impl Mountable for Element {
     fn unmount(&mut self) {}
     fn mount(&mut self, _parent: &Element, _marker: Option<&Node>) {}
-    fn try_mount(&mut self, _parent: &Element, _marker: Option<&Node>) -> bool { true }
-    fn insert_before_this(&self, _child: &mut dyn Mountable) -> bool { true }
-    fn elements(&self) -> Vec<Element> { vec![self.clone()] }
+    fn try_mount(&mut self, _parent: &Element, _marker: Option<&Node>) -> bool {
+        true
+    }
+    fn insert_before_this(&self, _child: &mut dyn Mountable) -> bool {
+        true
+    }
+    fn elements(&self) -> Vec<Element> {
+        vec![self.clone()]
+    }
 }
 
 impl CastFrom<Node> for Text {
