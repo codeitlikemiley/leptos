@@ -1,7 +1,10 @@
-use super::{handle_anchor_click, LocationChange, LocationProvider, Url};
+use super::{LocationChange, LocationProvider, Url};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use super::handle_anchor_click;
 use crate::{hooks::use_navigate, params::ParamsMap};
 use core::fmt;
 use futures::channel::oneshot;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use js_sys::{try_iter, Array, JsString};
 use leptos::{ev, prelude::*};
 use or_poisoned::OrPoisoned;
@@ -14,9 +17,15 @@ use std::{
     string::String,
     sync::{Arc, Mutex},
 };
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use tachys::dom::{document, window};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::{JsCast, JsValue};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use web_sys::UrlSearchParams;
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+type JsValue = String;
 
 #[derive(Clone)]
 pub struct BrowserUrl {
@@ -32,6 +41,7 @@ impl fmt::Debug for BrowserUrl {
     }
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 impl BrowserUrl {
     fn scroll_to_el(loc_scroll: bool) {
         if let Ok(hash) = window().location().hash() {
@@ -55,6 +65,7 @@ impl BrowserUrl {
     }
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 impl LocationProvider for BrowserUrl {
     type Error = JsValue;
 
@@ -273,8 +284,92 @@ impl LocationProvider for BrowserUrl {
     }
 }
 
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+impl BrowserUrl {
+    pub fn parse(url: &str) -> Result<Url, JsValue> {
+        let mut origin = String::new();
+        let mut path = url.to_string();
+        let mut search = String::new();
+        let mut hash = String::new();
+        if let Some(h_idx) = path.find('#') {
+            hash = path[h_idx + 1..].to_string();
+            path = path[..h_idx].to_string();
+        }
+        if let Some(q_idx) = path.find('?') {
+            search = path[q_idx + 1..].to_string();
+            path = path[..q_idx].to_string();
+        }
+        if path.starts_with("http://") || path.starts_with("https://") {
+            let rest = if path.starts_with("http://") { &path[7..] } else { &path[8..] };
+            if let Some(slash_idx) = rest.find('/') {
+                origin = path[..if path.starts_with("http://") { 7 } else { 8 } + slash_idx].to_string();
+                path = rest[slash_idx..].to_string();
+            } else {
+                origin = path.clone();
+                path = "/".to_string();
+            }
+        }
+        Ok(Url {
+            origin,
+            path,
+            search,
+            search_params: ParamsMap::default(),
+            hash,
+        })
+    }
+
+    pub fn redirect(_loc: &str) {}
+}
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+impl LocationProvider for BrowserUrl {
+    type Error = JsValue;
+
+    fn new() -> Result<Self, Self::Error> {
+        let url = ArcRwSignal::new(Url::default());
+        let path_stack = ArcStoredValue::new(vec![]);
+        Ok(Self {
+            url,
+            pending_navigation: Default::default(),
+            path_stack,
+            is_back: Default::default(),
+        })
+    }
+
+    fn as_url(&self) -> &ArcRwSignal<Url> {
+        &self.url
+    }
+
+    fn current() -> Result<Url, Self::Error> {
+        Ok(Url::default())
+    }
+
+    fn parse(url: &str) -> Result<Url, Self::Error> {
+        Self::parse(url)
+    }
+
+    fn parse_with_base(url: &str, _base: &str) -> Result<Url, Self::Error> {
+        Self::parse(url)
+    }
+
+    fn init(&self, _base: Option<Cow<'static, str>>) {}
+
+    fn ready_to_complete(&self) {}
+
+    fn complete_navigation(&self, _loc: &LocationChange) {}
+
+    fn redirect(loc: &str) {
+        Self::redirect(loc)
+    }
+
+    fn is_back(&self) -> ReadSignal<bool> {
+        self.is_back.read_only().into()
+    }
+}
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 fn search_params_from_web_url(
-    params: &web_sys::UrlSearchParams,
+    params: &UrlSearchParams,
 ) -> Result<ParamsMap, JsValue> {
     try_iter(params)?
         .into_iter()
@@ -291,7 +386,7 @@ fn search_params_from_web_url(
         .collect()
 }
 
-/// Resolves a redirect location to an (absolute) URL.
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub(crate) fn resolve_redirect_url(loc: &str) -> Option<web_sys::Url> {
     let origin = match window().location().origin() {
         Ok(origin) => origin,
@@ -301,7 +396,6 @@ pub(crate) fn resolve_redirect_url(loc: &str) -> Option<web_sys::Url> {
         }
     };
 
-    // TODO: Use server function's URL as base instead.
     let base = origin;
 
     match web_sys::Url::new_with_base(loc, &base) {
