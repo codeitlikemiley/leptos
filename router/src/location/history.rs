@@ -1,18 +1,18 @@
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use super::handle_anchor_click;
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-use or_poisoned::OrPoisoned;
+use super::{LocationChange, LocationProvider, Url};
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use crate::hooks::use_navigate;
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-use leptos::ev;
-use super::{LocationChange, LocationProvider, Url};
 use crate::params::ParamsMap;
 use core::fmt;
 use futures::channel::oneshot;
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use js_sys::{try_iter, Array, JsString};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use leptos::ev;
 use leptos::prelude::*;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use or_poisoned::OrPoisoned;
 use reactive_graph::signal::ArcRwSignal;
 use std::{
     borrow::Cow,

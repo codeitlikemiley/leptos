@@ -1,24 +1,24 @@
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use crate::location::BrowserUrl;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use crate::NavigateOptions;
 use crate::{
     components::ToHref,
     hooks::{has_router, use_navigate, use_resolved_path},
     location::LocationProvider,
 };
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use leptos::ev;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use leptos::logging::{error, warn};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use leptos::task::spawn_local;
 use leptos::{html::form, prelude::*};
 use std::{error::Error, sync::Arc};
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use wasm_bindgen::{JsCast, UnwrapThrowExt};
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use web_sys::{FormData, RequestRedirect, Response};
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-use crate::NavigateOptions;
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-use crate::location::BrowserUrl;
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-use leptos::task::spawn_local;
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-use leptos::logging::{error, warn};
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-use leptos::ev;
 
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 type OnFormData = Arc<dyn Fn(&FormData)>;
