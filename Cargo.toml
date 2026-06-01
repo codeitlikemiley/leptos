@@ -80,7 +80,7 @@ trybuild = { default-features = false, version = "1.0" }
 typed-builder = { default-features = false, version = "0.23" }
 typed-builder-macro = { default-features = false, version = "0.23" }
 thiserror = { default-features = false, version = "2.0" }
-wasm-bindgen = { default-features = false, version = "=0.2.103" }
+wasm-bindgen = { default-features = false, version = "0.2" }
 indexmap = { default-features = false, version = "2.13" }
 rstml = { default-features = false, version = "0.12" }
 rustc_version = { default-features = false, version = "0.4" }
@@ -101,7 +101,7 @@ url = { default-features = false, version = "2.5" }
 tokio = { default-features = false, version = "1.49" }
 base64 = { default-features = false, version = "0.22" }
 cfg-if = { default-features = false, version = "1.0" }
-wasm-bindgen-futures = { default-features = false, version = "=0.4.53" }
+wasm-bindgen-futures = { default-features = false, version = "0.4" }
 tower = { default-features = false, version = "0.5" }
 proc-macro2 = { default-features = false, version = "1.0" }
 serde = { default-features = false, version = "1.0" }
@@ -112,8 +112,8 @@ syn = { default-features = false, version = "2.0" }
 xxhash-rust = { default-features = false, version = "0.8" }
 paste = { default-features = false, version = "1.0" }
 quote = { default-features = false, version = "1.0" }
-web-sys = { default-features = false, version = "=0.3.80" }
-js-sys = { default-features = false, version = "=0.3.80" }
+web-sys = { default-features = false, version = "0.3" }
+js-sys = { default-features = false, version = "0.3" }
 rand = { default-features = false, version = "0.9" }
 serde-lite = { default-features = false, version = "0.5" }
 tokio-tungstenite = { default-features = false, version = "0.28" }
@@ -135,7 +135,7 @@ multer = { default-features = false, version = "3.1" }
 leptos-spin-macro = { default-features = false, version = "0.2" }
 sledgehammer_utils = { default-features = false, version = "0.3" }
 sledgehammer_bindgen = { default-features = false, version = "0.6" }
-wasm-streams = { default-features = false, version = "0.4" }
+wasm-streams = { default-features = false, version = "0.5" }
 rkyv = { default-features = false, version = "0.8" }
 temp-env = { default-features = false, version = "0.3" }
 uuid = { default-features = false, version = "1.20" }
