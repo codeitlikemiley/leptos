@@ -3,7 +3,14 @@ use std::{borrow::Cow, fmt::Debug, marker::PhantomData};
 use wasm_bindgen::JsValue;
 
 /// A DOM renderer.
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub mod dom;
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+pub mod dom_stub;
+
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+pub use dom_stub as dom;
 
 /// The renderer being used for the application.
 ///
